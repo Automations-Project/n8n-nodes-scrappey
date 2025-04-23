@@ -1,28 +1,27 @@
 {
-  "name": "n8n-nodes-Name",
-  "version": "0.1.0",
-  "description": "",
-  "keywords": [
-    "n8n-community-node-package"
-  ],
-  "license": "MIT",
-  "homepage": "",
-  "author": {
-    "name": "Nskha",
-    "email": "github-public@admins.mozmail.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Automations-Project/n8n-nodes-Name.git"
-  },
-  "engines": {
-    "node": ">=18.10",
-    "pnpm": ">=9.1"
-  },
-  "packageManager": "pnpm@9.1.4",
-  "main": "index.js",
+	"name": "n8n-nodes-scrappey",
+	"version": "0.1.0",
+	"description": "",
+	"keywords": [
+		"n8n-community-node-package"
+	],
+	"license": "MIT",
+	"homepage": "",
+	"author": {
+		"name": "Nskha",
+		"email": "github-public@admins.mozmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Automations-Project/n8n-nodes-scrappey.git"
+	},
+	"engines": {
+		"node": ">=18.10",
+		"pnpm": ">=9.1"
+	},
+	"packageManager": "pnpm@9.1.4",
+	"main": "index.js",
 	"scripts": {
-    // ADD NODE NAME
 		"preinstall": "npx only-allow pnpm",
 		"build": "tsc && gulp build:icons",
 		"dev": "tsc --watch",
@@ -30,31 +29,33 @@
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json",
-		"start:dev": "pnpm build && mkdir -p ~/.n8n/custom/n8n-nodes-u7buy-v2 && cp -r dist package.json ~/.n8n/custom/n8n-nodes-u7buy-v2/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
+		"start:dev": "pnpm build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
 	},
-  "files": [
-    "dist"
-  ],
-  "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      // HERE ADD YOUR CREDENTIAL NAME AFTER COMPILED
-      // "dist/credentials/##CredentialName##.credentials.js"
-    ],
-    "nodes": [
-      // HERE ADD YOUR NODE NAME AFTER COMPILED
-      // "dist/nodes/##FolderName##/##NodeName##.node.js"
-    ]
-  },
-  "devDependencies": {
-    "@typescript-eslint/parser": "^7.15.0",
-    "eslint": "^8.56.0",
-    "eslint-plugin-n8n-nodes-base": "^1.16.1",
-    "gulp": "^4.0.2",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
-  },
-  "peerDependencies": {
-    "n8n-workflow": "*"
-  }
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/ScrappeyApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Scrappey/Scrappey.node.js"
+		]
+	},
+	"devDependencies": {
+		"@typescript-eslint/parser": "^7.15.0",
+		"eslint": "^8.56.0",
+		"eslint-plugin-n8n-nodes-base": "^1.16.1",
+		"gulp": "^4.0.2",
+		"n8n": "^1.88.0",
+		"prettier": "^3.3.2",
+		"typescript": "^5.5.3"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	},
+	"dependencies": {
+		"uuid": "^11.1.0"
+	}
 }

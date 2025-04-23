@@ -1,17 +1,17 @@
 {
-	"node": "n8n-nodes-TestNode",
+	"node": "n8n-nodes-scrappey",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Development", "Developer Tools"],
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": "example.com"
+				"url": "https://wiki.scrappey.com"
 			}
 		],
 		"primaryDocumentation": [
 			{
-				"url": "example.com"
+				"url": "https://wiki.scrappey.com"
 			}
 		]
 	}
