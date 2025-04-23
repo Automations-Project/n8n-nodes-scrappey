@@ -60,6 +60,7 @@ const handleAdvancedBrowser = (eFn: IExecuteFunctions) => {
 };
 
 export const handleBody = async (eFn: IExecuteFunctions) => {
+	const credentials = await eFn.getCredentials('scrappeyApi');
 	// Reset body object for each call
 	body = {};
 
@@ -141,8 +142,18 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		body.proxyCountry = customProxyCountry;
 
 	if (allowProxy) {
-		const credentials = await eFn.getCredentials('scrappeyApi');
 		if (customProxy === true) body.proxy = credentials.proxyUrl;
+	}
+
+	if (credentials?.whitelistedDomains) {
+		// Ensure whitelistedDomains is passed as an array
+		const domains = Array.isArray(credentials.whitelistedDomains)
+			? credentials.whitelistedDomains
+			: typeof credentials.whitelistedDomains === 'string'
+				? credentials.whitelistedDomains.split(',').map((domain) => domain.trim())
+				: [];
+
+		body.whitelistedDomains = domains;
 	}
 
 	return body;
