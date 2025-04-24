@@ -13,7 +13,7 @@ export const publicFields: INodeProperties[] = [
 		default: '',
 		hint: 'URL OF THE PAGE TO SCRAP',
 		placeholder: 'https://httpbin.rs/get',
-		required: false,
+		required: true,
 		displayOptions: {
 			show: {
 				scrappeyOperations: ['requestBuilder'],

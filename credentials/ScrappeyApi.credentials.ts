@@ -11,6 +11,7 @@ export class ScrappeyApi implements ICredentialType {
 			name: 'apiKey',
 			type: 'string',
 			default: '',
+			required: true,
 			typeOptions: {
 				password: true,
 			},
