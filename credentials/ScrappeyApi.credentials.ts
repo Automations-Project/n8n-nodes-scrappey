@@ -3,6 +3,7 @@ import { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-work
 export class ScrappeyApi implements ICredentialType {
 	name = 'scrappeyApi';
 	displayName = 'Scrappey API';
+	icon = 'file:scrappey.svg' as const;
 	documentationUrl = 'https://wiki.scrappey.com';
 	properties: INodeProperties[] = [
 		{

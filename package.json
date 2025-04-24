@@ -1,7 +1,7 @@
 {
-	"name": "n8n-nodes-scrappey",
+	"name": "@automations-project/n8n-nodes-scrappey",
 	"version": "0.1.0",
-	"description": "",
+	"description": "n8n node package for Scrappey API integration",
 	"keywords": [
 		"n8n-community-node-package"
 	],
@@ -21,6 +21,9 @@
 	},
 	"packageManager": "pnpm@9.1.4",
 	"main": "index.js",
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
 	"scripts": {
 		"preinstall": "npx only-allow pnpm",
 		"build": "tsc && gulp build:icons",
@@ -29,6 +32,7 @@
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json",
+		"publish": "pnpm build && npm publish",
 		"start:dev": "pnpm build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
 	},
 	"files": [
