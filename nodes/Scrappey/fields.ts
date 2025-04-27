@@ -7,6 +7,19 @@ import { INodeProperties } from 'n8n-workflow';
 import { Static_Country_Proxies } from './utils';
 export const publicFields: INodeProperties[] = [
 	{
+		displayName: 'Allow using Credinital Proxy?',
+		name: 'allowCredinitalProxy',
+		type: 'boolean',
+		default: false,
+		hint: 'Override proxy settings from HTTP-Request Node. When enabled, any proxy configured in the HTTP-Request Node will be ignored, even if available.',
+		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['httpRequestAutoRetry', 'browserRequestAutoRetry'],
+			},
+		},
+	},
+	{
 		displayName: 'URL',
 		name: 'url',
 		type: 'string',
@@ -52,6 +65,11 @@ export const publicFields: INodeProperties[] = [
 				value: 'request.publish',
 			},
 		],
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+			},
+		},
 	},
 	{
 		displayName: 'Proxy Type',
@@ -310,6 +328,11 @@ export const publicFields: INodeProperties[] = [
 		default: false,
 		hint: 'That means the proxy in the credentials will be sent with the request.',
 		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+			},
+		},
 	},
 	{
 		displayName: 'Request Type',
@@ -330,6 +353,11 @@ export const publicFields: INodeProperties[] = [
 				value: 'PatchedChrome',
 			},
 		],
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+			},
+		},
 	},
 	{
 		displayName: 'Attempts',
@@ -342,6 +370,11 @@ export const publicFields: INodeProperties[] = [
 			maxValue: 3,
 		},
 		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+			},
+		},
 	},
 ];
 

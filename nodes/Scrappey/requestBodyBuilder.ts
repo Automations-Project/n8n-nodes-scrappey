@@ -158,3 +158,167 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 
 	return body;
 };
+
+export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => {
+	const method = eFn.getNodeParameter('method', 0, '={{ $($prevNode.name).params.method }}');
+	// Process the method for the cmd property
+	const processedMethod = typeof method === 'string' ? method.toLowerCase() : method;
+	const cmd = `request.${processedMethod}`;
+	let url = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
+	const authentication = eFn.getNodeParameter(
+		'authentication',
+		0,
+		'={{ $($prevNode.name).params.authentication }}',
+	);
+	const sendQuery = eFn.getNodeParameter(
+		'sendQuery',
+		0,
+		'={{ $($prevNode.name).params.sendQuery }}',
+	);
+
+	const queryParameters = eFn.getNodeParameter(
+		'queryParameters',
+		0,
+		'={{ $($prevNode.name).params.queryParameters }}',
+	);
+	const headerParameters = eFn.getNodeParameter(
+		'headerParameters',
+		0,
+		'={{ $($prevNode.name).params.headerParameters }}',
+	);
+	const proxy = eFn.getNodeParameter('proxy', 0, '={{ $($prevNode.name).params.options.proxy }}');
+	const bodyParameters = eFn.getNodeParameter(
+		'bodyParameters',
+		0,
+		'={{ $($prevNode.name).params.bodyParameters }}',
+	);
+
+	// Process headers
+	const processedHeaders: Record<string, string> = {};
+	if (headerParameters) {
+		// Handle different possible formats of headerParameters
+		if (typeof headerParameters === 'object') {
+			const headerParams = headerParameters as any;
+
+			// Check if it has a parameters array (common format in n8n)
+			if (Array.isArray(headerParams.parameters)) {
+				for (const header of headerParams.parameters) {
+					if (header.name && header.value) {
+						processedHeaders[header.name] = header.value;
+					}
+				}
+			} else if (typeof headerParams === 'object') {
+				// If headerParams is already a key-value object, use it directly
+				Object.assign(processedHeaders, headerParams);
+			}
+		}
+	}
+
+	// Process proxy
+	let processedProxy: string | undefined;
+	try {
+		const credentials = await eFn.getCredentials('scrappeyApi');
+		const allowCredentialProxy = eFn.getNodeParameter('allowCredinitalProxy', 0, false) as boolean;
+		if (allowCredentialProxy && credentials?.proxyUrl) {
+			processedProxy = String(credentials.proxyUrl);
+		} else if (proxy) {
+			processedProxy = proxy as string;
+		}
+	} catch (error) {
+		// If there's an error accessing credentials, try to use the proxy from parameters
+		if (proxy) {
+			processedProxy = proxy as string;
+		}
+	}
+
+	// Process body parameters
+	let processedPostData: string | undefined;
+	let contentType: string | undefined;
+
+	if (bodyParameters) {
+		// Handle bodyParameters in different formats
+		const bodyParams = bodyParameters;
+
+		// Check if it has a parameters array (common format in n8n)
+		if (
+			typeof bodyParams === 'object' &&
+			bodyParams !== null &&
+			'parameters' in bodyParams &&
+			Array.isArray(bodyParams.parameters)
+		) {
+			// Convert array format to an object
+			const bodyParamsObj: Record<string, string> = {};
+			for (const param of bodyParams.parameters) {
+				if (param && typeof param === 'object' && 'name' in param && 'value' in param) {
+					bodyParamsObj[param.name as string] = param.value as string;
+				}
+			}
+			// Convert to JSON string for postData
+			processedPostData = JSON.stringify(bodyParamsObj);
+			// Set content-type
+			contentType = 'application/json';
+		} else {
+			// If it's already in another format, just use it directly
+			processedPostData = typeof bodyParams === 'string' ? bodyParams : JSON.stringify(bodyParams);
+			contentType = 'application/json';
+		}
+	}
+
+	// Remove trailing slash from URL if it exists
+	if (url.endsWith('/')) {
+		url = url.slice(0, -1);
+	}
+
+	// Handle query parameters if they exist
+	if (queryParameters) {
+		const qParams = queryParameters;
+
+		// Check if it has a parameters array (common format in n8n)
+		if (
+			typeof qParams === 'object' &&
+			qParams !== null &&
+			'parameters' in qParams &&
+			Array.isArray(qParams.parameters) &&
+			qParams.parameters.length > 0
+		) {
+			const urlObj = new URL(url);
+
+			// Add each query parameter to the URL
+			for (const param of qParams.parameters) {
+				if (param && typeof param === 'object' && 'name' in param && 'value' in param) {
+					urlObj.searchParams.append(param.name as string, param.value as string);
+				}
+			}
+
+			// Update the URL with query parameters
+			url = urlObj.toString();
+		} else if (typeof qParams === 'object' && qParams !== null) {
+			// If qParams is already a key-value object, use it directly
+			const urlObj = new URL(url);
+
+			for (const [key, value] of Object.entries(qParams)) {
+				if (key && value !== undefined) {
+					urlObj.searchParams.append(key, String(value));
+				}
+			}
+
+			// Update the URL with query parameters
+			url = urlObj.toString();
+		}
+	}
+	return {
+		method,
+		cmd,
+		url,
+		authentication,
+		proxy,
+		processedProxy,
+		processedHeaders,
+		processedPostData,
+		contentType,
+		sendQuery,
+		queryParameters,
+		headerParameters,
+		bodyParameters,
+	};
+};

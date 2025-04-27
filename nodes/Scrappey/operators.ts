@@ -14,17 +14,17 @@ export const scrappeyOperators: INodeProperties[] = [
 				action: 'Build a request',
 			},
 			{
-				name: 'Handle Error HTTPs Node (Request)',
-				value: 'handleErrorHttpRequest',
+				name: 'HTTP Request • Auto-Retry on Protection',
+				value: 'httpRequestAutoRetry',
 				description:
-					'Handle Error HTTPs Node (Request) that means if you had an error like captcha or cloudflare and error happen, this operator will resend the request with same body,headers,cookies,proxy,etc',
+					'Automatically retries an HTTP request when it is blocked by CAPTCHA, Cloudflare, or similar anti-bot measures, resending the identical payload, headers, cookies, and proxy settings',
 				action: 'Handle Error HTTPs Node (Request)',
 			},
 			{
-				name: 'Handle Error HTTPs Node (Browser)',
-				value: 'handleErrorHttpBrowser',
+				name: 'Browser Request • Auto-Retry & Anti-Bot',
+				value: 'browserRequestAutoRetry',
 				description:
-					'Handle Error HTTPs Node (Browser) as default all advanced settings are enabled like addmovementmouse and antibot is on (that means hcaptcha and cloudflare will be handled)',
+					'Executes a browser-based request with built-in anti-bot techniques (movement emulation, hCaptcha/Cloudflare bypass, etc.) and automatically retries if protection pages are encountered',
 				action: 'Handle Error HTTPs Node (Browser)',
 			},
 		],

@@ -33,7 +33,7 @@
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json",
-		"start:dev": "pnpm build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
+		"start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
 	},
 	"files": [
 		"dist"
