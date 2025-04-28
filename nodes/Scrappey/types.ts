@@ -13,11 +13,11 @@ export interface HTTPRequest_Body {
 export interface ScrappeyRequestBody {
 	cmd: string;
 	url: string;
-	datadomeBypass: boolean;
-	retries: number;
-	mouseMovements: boolean;
-	automaticallySolveCaptchas: boolean;
-	customHeaders: any;
+	datadomeBypass?: boolean;
+	retries?: number;
+	mouseMovements?: boolean;
+	automaticallySolveCaptchas?: boolean;
+	customHeaders?: any;
 	proxy?: string;
 	bodyParameters?: any;
 	postData?: string;

@@ -7,6 +7,13 @@ import { INodeProperties } from 'n8n-workflow';
 import { Static_Country_Proxies } from './utils';
 export const publicFields: INodeProperties[] = [
 	{
+		displayName:
+			'✨ Feel free to support us by using our Scrappey <a href="https://scrappey.com/?ref=karek" target="_blank">Affiliate Link</a> ✨ Thanks for your support! 💖',
+		name: 'affiliateMessage',
+		type: 'notice',
+		default: '',
+	},
+	{
 		displayName: 'Allow using Credinital Proxy?',
 		name: 'allowCredinitalProxy',
 		type: 'boolean',
