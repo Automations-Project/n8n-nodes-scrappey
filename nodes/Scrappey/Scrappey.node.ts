@@ -23,7 +23,7 @@ export class Scrappey implements INodeType {
 		icon: 'file:scrappey.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{$parameter["scrappeyOperations"] + ": " + $parameter["resource"]}}',
 		description: 'Interact with Scrappey API',
 		defaults: {
 			name: 'scrappey',
