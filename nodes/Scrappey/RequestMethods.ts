@@ -24,26 +24,21 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 		automaticallySolveCaptchas: true,
 	};
 
-	// Set custom headers if available from the processed data
 	if (prev_HTTPRequest.processedHeaders) {
 		body.customHeaders = prev_HTTPRequest.processedHeaders;
 	}
 
-	// Set proxy if available from the processed data
 	if (prev_HTTPRequest.processedProxy) {
 		body.proxy = prev_HTTPRequest.processedProxy;
 	}
 
-	// Set proxyType if provided
 	if (proxyType && proxyType.trim() !== '') {
 		body[proxyType] = true;
 	}
 
-	// Set post data if available from the processed data
 	if (prev_HTTPRequest.processedPostData) {
 		body.postData = prev_HTTPRequest.processedPostData;
 
-		// Set content-type header if available
 		if (prev_HTTPRequest.contentType) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}
@@ -66,28 +61,23 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 		url: prev_HTTPRequest.url as string,
 	};
 
-	// Set custom headers if available from the processed data
 	if (prev_HTTPRequest.processedHeaders) {
 		body.customHeaders = prev_HTTPRequest.processedHeaders;
 	}
 
-	// Set proxy if available from the processed data
 	if (prev_HTTPRequest.processedProxy) {
 		body.proxy = prev_HTTPRequest.processedProxy;
 	} else {
 		body.proxyCountry = customProxyCountry as string;
 	}
 
-	// Set proxyType if provided
 	if (proxyType && proxyType.trim() !== '') {
 		body[proxyType] = true;
 	}
 
-	// Set post data if available from the processed data
 	if (prev_HTTPRequest.processedPostData) {
 		body.postData = prev_HTTPRequest.processedPostData;
 
-		// Set content-type header if available
 		if (prev_HTTPRequest.contentType) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}

@@ -9,7 +9,8 @@ export const scrappeyOperators: INodeProperties[] = [
 			{
 				name: 'Request Builder',
 				value: 'requestBuilder',
-				description: 'Build a request',
+				description:
+					'Create a customized HTTP or browser request with advanced configuration options',
 				action: 'Build a request',
 			},
 			{

@@ -12,12 +12,10 @@ const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {
 			handleAdvancedBrowser(eFn);
 			return body;
 		case 'Request':
-			// * Added When Choosing Request Option
 			body.requestType = 'request';
 			return body;
 
 		case 'PatchedChrome':
-			// * Patched Body Added When Choosing Patched Chrome Browser
 			body.browser = [
 				{
 					name: 'chrome',
@@ -66,11 +64,8 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	// Reset body object for each call
 	body = {};
 
-	// *******************************************************************************/
-	//Getting Advanced Values from Request Type
 	const request_type = eFn.getNodeParameter('request_type', 0, 'Request') as string;
 	body = Request_Type_Choice(request_type, eFn);
-	//*********************************************************************************/
 
 	const url = eFn.getNodeParameter('url', 0, '') as string;
 	const httpMethod = eFn.getNodeParameter('httpMethod', 0, '') as string;
@@ -85,17 +80,14 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const customProxy = eFn.getNodeParameter('custom_proxy', 0, false) as boolean;
 	const allowProxy = eFn.getNodeParameter('allowProxy', 0, false) as boolean;
 	const attempts = eFn.getNodeParameter('attempts', 0, 3) as number;
-	//*************************************************************
-	// Adding Keys if they have values
-	//*************************************************************
+
 	if (url && url.trim() !== '') body.url = url;
 	if (httpMethod && httpMethod.trim() !== '') body.cmd = httpMethod;
-	// When proxyType has a valid value (not empty string), use that value as a key
+
 	if (proxyType && proxyType.trim() !== '') body[proxyType] = true;
 
 	if (userSeason && userSeason.trim() !== '') body.session = userSeason;
 
-	// Handle the body or params will be sended
 	if (httpMethod !== 'request.get') {
 		if (bodyOrParams) {
 			body.postData = body_for_request;
@@ -104,9 +96,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 			};
 		} else body.postData = params_for_request;
 	}
-	/*********************************************************************** */
 
-	// Handle Custom headers keys and values
 	if (customHeaders && Object.keys(customHeaders).length > 0) {
 		const headersObj: Record<string, string> = {};
 
@@ -120,7 +110,6 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		}
 	}
 
-	// Handle Custom cookies keys and values
 	if (customCookies && Object.keys(customCookies).length > 0) {
 		let cookieString = '';
 
@@ -148,7 +137,6 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		if (customProxy === true) body.proxy = credentials.proxyUrl;
 	}
 
-	// Always add attempts regardless of whitelistedDomains
 	body.attempts = attempts;
 
 	if (credentials?.whitelistedDomains) {
@@ -167,23 +155,19 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 
 export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => {
 	const method = eFn.getNodeParameter('method', 0, '={{ $($prevNode.name).params.method }}');
-	// Process the method for the cmd property
+
 	const processedMethod = typeof method === 'string' ? method.toLowerCase() : method;
 	const cmd = `request.${processedMethod}`;
 	let urlRaw = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
 
-	// Evaluate the URL if it's an expression
 	urlRaw = evaluateExpression(eFn, urlRaw, 0) as string;
 
-	// Only remove trailing slash if it's not an expression
 	if (typeof urlRaw === 'string' && !isExpression(urlRaw) && urlRaw.endsWith('/')) {
 		urlRaw = urlRaw.slice(0, -1);
 	}
 
 	const url = urlRaw;
 
-	// For URL, we need to be careful not to modify expressions
-	// If it's not an expression and ends with '/', remove the trailing slash later
 	const authentication = eFn.getNodeParameter(
 		'authentication',
 		0,
@@ -212,17 +196,13 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 		'={{ $($prevNode.name).params.bodyParameters }}',
 	);
 
-	// Process headers
 	let processedHeaders: Record<string, string> | undefined = undefined;
 	if (headerParameters) {
-		// Initialize the object only if we have headers to process
 		const tempHeaders: Record<string, string> = {};
 
-		// Handle different possible formats of headerParameters
 		if (typeof headerParameters === 'object') {
 			const headerParams = headerParameters as any;
 
-			// Check if it has a parameters array (common format in n8n)
 			if (Array.isArray(headerParams.parameters)) {
 				for (const header of headerParams.parameters) {
 					if (header.name && header.value) {
@@ -230,18 +210,15 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 					}
 				}
 			} else if (typeof headerParams === 'object') {
-				// If headerParams is already a key-value object, use it directly
 				Object.assign(tempHeaders, headerParams);
 			}
 		}
 
-		// Only set processedHeaders if we actually have any headers
 		if (Object.keys(tempHeaders).length > 0) {
 			processedHeaders = tempHeaders;
 		}
 	}
 
-	// Process proxy
 	let processedProxy: string | undefined;
 	try {
 		const credentials = await eFn.getCredentials('scrappeyApi');
@@ -252,50 +229,42 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 			processedProxy = proxy as string;
 		}
 	} catch (error) {
-		// If there's an error accessing credentials, try to use the proxy from parameters
 		if (proxy) {
 			processedProxy = proxy as string;
 		}
 	}
 
-	// Process body parameters
 	let processedPostData: string | undefined;
 	let contentType: string | undefined;
 
 	if (bodyParameters) {
-		// Handle bodyParameters in different formats
 		const bodyParams = bodyParameters;
 
-		// Check if it has a parameters array (common format in n8n)
 		if (
 			typeof bodyParams === 'object' &&
 			bodyParams !== null &&
 			'parameters' in bodyParams &&
 			Array.isArray(bodyParams.parameters)
 		) {
-			// Convert array format to an object
 			const bodyParamsObj: Record<string, string> = {};
 			for (const param of bodyParams.parameters) {
 				if (param && typeof param === 'object' && 'name' in param && 'value' in param) {
 					bodyParamsObj[param.name as string] = param.value as string;
 				}
 			}
-			// Convert to JSON string for postData
+
 			processedPostData = JSON.stringify(bodyParamsObj);
-			// Set content-type
+
 			contentType = 'application/json';
 		} else {
-			// If it's already in another format, just use it directly
 			processedPostData = typeof bodyParams === 'string' ? bodyParams : JSON.stringify(bodyParams);
 			contentType = 'application/json';
 		}
 	}
 
-	// Handle query parameters if they exist
 	if (queryParameters) {
 		const qParams = queryParameters;
 
-		// Check if it has a parameters array (common format in n8n)
 		if (
 			typeof qParams === 'object' &&
 			qParams !== null &&

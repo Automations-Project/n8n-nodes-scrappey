@@ -14,7 +14,7 @@ export const publicFields: INodeProperties[] = [
 		default: '',
 	},
 	{
-		displayName: 'Allow using Credinital Proxy?',
+		displayName: 'Allow using Credential Proxy?',
 		name: 'allowCredinitalProxy',
 		type: 'boolean',
 		default: false,
@@ -31,7 +31,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'url',
 		type: 'string',
 		default: '',
-		hint: 'URL OF THE PAGE TO SCRAP',
+		hint: 'URL of the page to scrape',
 		placeholder: 'https://httpbin.rs/get',
 		required: true,
 		displayOptions: {
@@ -117,7 +117,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'bodyOrParams',
 		type: 'options',
 		default: 'params_used',
-		hint: 'Select Body or Params',
+		hint: 'Select whether to use Body or Params for the request',
 		options: [
 			{
 				name: 'Body',
@@ -146,7 +146,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'params_for_request',
 		type: 'string',
 		default: '',
-		hint: 'Params to use for the request',
+		hint: 'Parameters to use for the request',
 		displayOptions: {
 			show: {
 				bodyOrParams: ['params_used'],
@@ -187,11 +187,11 @@ export const publicFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'User Season',
+		displayName: 'User Session',
 		name: 'userSeason',
 		type: 'string',
 		default: uuidGenerate(),
-		hint: 'User season to use for the request',
+		hint: 'User session identifier to use for the request',
 		required: false,
 		displayOptions: {
 			show: {
@@ -241,7 +241,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'oneStringCookie',
 		type: 'boolean',
 		default: false,
-		hint: 'One string cookie to use for the request',
+		hint: 'Use a single string format for cookies',
 		required: false,
 		displayOptions: {
 			show: {
@@ -255,7 +255,7 @@ export const publicFields: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		placeholder: 'sessionid=abc123;csrftoken=xyz456;theme=light',
-		hint: 'Cookie to use for the request',
+		hint: 'Cookie string to use for the request (format: name=value;name2=value2)',
 		required: false,
 
 		displayOptions: {
@@ -311,7 +311,7 @@ export const publicFields: INodeProperties[] = [
 		type: 'options',
 		options: Static_Country_Proxies,
 		default: '',
-		hint: 'Custom proxy country to use for the request',
+		hint: 'Specify a country for the proxy to use with this request',
 		required: false,
 		displayOptions: {
 			show: {
@@ -328,7 +328,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'datadome',
 		type: 'boolean',
 		default: false,
-		hint: 'Get the best results by clicking a preconfig. Advanced includes all most common antibots.',
+		hint: 'Enable Datadome protection bypass. Get the best results by selecting a preconfigured option. Advanced includes all common antibot protections.',
 		displayOptions: {
 			show: {
 				scrappeyOperations: ['requestBuilder'],
@@ -341,7 +341,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'custom_proxy',
 		type: 'boolean',
 		default: false,
-		hint: 'That means the proxy in the credentials will be sent with the request.',
+		hint: 'When enabled, the proxy defined in credentials will be used for this request.',
 		required: false,
 		displayOptions: {
 			show: {
@@ -379,7 +379,7 @@ export const publicFields: INodeProperties[] = [
 		name: 'attempts',
 		type: 'number',
 		default: 1,
-		hint: 'Number of attempts to make the request',
+		hint: 'Number of attempts to make the request if it fails',
 		typeOptions: {
 			minValue: 1,
 			maxValue: 3,
@@ -399,7 +399,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		name: 'antibot',
 		type: 'boolean',
 		default: false,
-		hint: 'Solve hcaptcha & recaptcha',
+		hint: 'Enable automatic solving of hCaptcha and reCAPTCHA challenges',
 		required: false,
 		displayOptions: {
 			show: {
@@ -413,7 +413,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		name: 'addRandomMouseMovement',
 		type: 'boolean',
 		default: false,
-		hint: 'Add random mouse movement to the session',
+		hint: 'Add random mouse movements to simulate human interaction during the session',
 		required: false,
 		displayOptions: {
 			show: {
@@ -427,7 +427,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		name: 'recordVideoSession',
 		type: 'boolean',
 		default: false,
-		hint: 'Record a video of the session',
+		hint: 'Record a video of the browser session for debugging purposes',
 		required: false,
 		displayOptions: {
 			show: {
@@ -444,7 +444,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		default: '',
 		placeholder:
 			'div[class="px-mobile-1 px-tablet-1 pt-mobile-0 pt-desktop-6 pt-tablet-6 pt-widescreen-6 pb-mobile-7 pb-desktop-6 pb-tablet-6 pb-widescreen-6"]',
-		hint: 'CSS selector to use for the request',
+		hint: 'CSS selector to target specific elements on the page',
 		required: false,
 		displayOptions: {
 			show: {
@@ -459,7 +459,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		placeholder: 'https://example.com',
-		hint: 'Href to use with cssSelector',
+		hint: 'URL to navigate to when the CSS selector is used',
 		required: false,
 		displayOptions: {
 			show: {
@@ -474,7 +474,7 @@ export const AdvancedSettingsForBrowser: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		placeholder: 'https://example.com/api/v2/Test',
-		hint: 'By intercepting an XHR/Fetch request it will return the data of the intercepted request instead of the main scrape url. Example: instead of returning google.com it will return the result of google.com/result.json in text format.',
+		hint: 'Intercept and return data from a specific XHR/Fetch request rather than the main page. For example, instead of returning google.com content, it will return the data from google.com/result.json in text format.',
 		required: false,
 		displayOptions: {
 			show: {

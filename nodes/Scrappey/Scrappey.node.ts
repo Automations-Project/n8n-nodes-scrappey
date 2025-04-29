@@ -21,10 +21,10 @@ export class Scrappey implements INodeType {
 		displayName: 'Scrappey',
 		name: 'scrappey',
 		icon: 'file:scrappey.svg',
-		group: ['transform'],
+		group: ['web-scraping'],
 		version: 1,
-		subtitle: '={{$parameter["scrappeyOperations"] + ": " + $parameter["resource"]}}',
-		description: 'Interact with Scrappey API',
+		subtitle: '={{$parameter["scrappeyOperations"]}}',
+		description: 'Make advanced web requests with anti-bot protection bypass using Scrappey API',
 		defaults: {
 			name: 'scrappey',
 		},
