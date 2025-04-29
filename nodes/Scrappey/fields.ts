@@ -22,7 +22,7 @@ export const publicFields: INodeProperties[] = [
 		required: false,
 		displayOptions: {
 			show: {
-				scrappeyOperations: ['httpRequestAutoRetry', 'browserRequestAutoRetry'],
+				scrappeyOperations: ['httpRequestAutoRetry', 'httpRequestAutoRetryBrowser'],
 			},
 		},
 	},
@@ -104,7 +104,11 @@ export const publicFields: INodeProperties[] = [
 		],
 		displayOptions: {
 			show: {
-				scrappeyOperations: ['requestBuilder'],
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
 			},
 		},
 	},
@@ -311,7 +315,11 @@ export const publicFields: INodeProperties[] = [
 		required: false,
 		displayOptions: {
 			show: {
-				scrappeyOperations: ['requestBuilder'],
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
 			},
 		},
 	},

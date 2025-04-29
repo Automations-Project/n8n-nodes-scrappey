@@ -7,3 +7,9 @@ npm-debug.log*
 yarn.lock
 .vscode/launch.json
 .npmrc
+.PublishKey
+logs
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+

@@ -1,4 +1,4 @@
-import { INodePropertyOptions } from 'n8n-workflow';
+import { IExecuteFunctions, INodePropertyOptions } from 'n8n-workflow';
 
 export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Afghanistan', value: 'Afghanistan' },
@@ -15,9 +15,9 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Bangladesh', value: 'Bangladesh' },
 	{ name: 'Belarus', value: 'Belarus' },
 	{ name: 'Belgium', value: 'Belgium' },
-	{ name: 'Bosnia and Herzegovina', value: 'Bosnia and Herzegovina' },
+	{ name: 'Bosnia and Herzegovina', value: 'BosniaandHerzegovina' },
 	{ name: 'Brazil', value: 'Brazil' },
-	{ name: 'British Virgin Islands', value: 'British Virgin Islands' },
+	{ name: 'British Virgin Islands', value: 'BritishVirginIslands' },
 	{ name: 'Brunei', value: 'Brunei' },
 	{ name: 'Bulgaria', value: 'Bulgaria' },
 	{ name: 'Cambodia', value: 'Cambodia' },
@@ -26,16 +26,16 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Chile', value: 'Chile' },
 	{ name: 'China', value: 'China' },
 	{ name: 'Colombia', value: 'Colombia' },
-	{ name: 'Costa Rica', value: 'Costa Rica' },
+	{ name: 'Costa Rica', value: 'CostaRica' },
 	{ name: 'Croatia', value: 'Croatia' },
 	{ name: 'Cuba', value: 'Cuba' },
 	{ name: 'Cyprus', value: 'Cyprus' },
 	{ name: 'Czechia', value: 'Czechia' },
 	{ name: 'Denmark', value: 'Denmark' },
-	{ name: 'Dominican Republic', value: 'Dominican Republic' },
+	{ name: 'Dominican Republic', value: 'DominicanRepublic' },
 	{ name: 'Ecuador', value: 'Ecuador' },
 	{ name: 'Egypt', value: 'Egypt' },
-	{ name: 'El Salvador', value: 'El Salvador' },
+	{ name: 'El Salvador', value: 'ElSalvador' },
 	{ name: 'Estonia', value: 'Estonia' },
 	{ name: 'Ethiopia', value: 'Ethiopia' },
 	{ name: 'Finland', value: 'Finland' },
@@ -46,8 +46,8 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Greece', value: 'Greece' },
 	{ name: 'Guatemala', value: 'Guatemala' },
 	{ name: 'Guyana', value: 'Guyana' },
-	{ name: 'Hashemite Kingdom of Jordan', value: 'Hashemite Kingdom of Jordan' },
-	{ name: 'Hong Kong', value: 'Hong Kong' },
+	{ name: 'Hashemite Kingdom of Jordan', value: 'HashemiteKingdomofJordan' },
+	{ name: 'Hong Kong', value: 'HongKong' },
 	{ name: 'Hungary', value: 'Hungary' },
 	{ name: 'India', value: 'India' },
 	{ name: 'Indonesia', value: 'Indonesia' },
@@ -77,26 +77,26 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Myanmar', value: 'Myanmar' },
 	{ name: 'Nepal', value: 'Nepal' },
 	{ name: 'Netherlands', value: 'Netherlands' },
-	{ name: 'New Zealand', value: 'New Zealand' },
+	{ name: 'New Zealand', value: 'NewZealand' },
 	{ name: 'Nigeria', value: 'Nigeria' },
 	{ name: 'Norway', value: 'Norway' },
 	{ name: 'Oman', value: 'Oman' },
 	{ name: 'Pakistan', value: 'Pakistan' },
 	{ name: 'Palestine', value: 'Palestine' },
 	{ name: 'Panama', value: 'Panama' },
-	{ name: 'Papua New Guinea', value: 'Papua New Guinea' },
+	{ name: 'Papua New Guinea', value: 'PapuaNewGuinea' },
 	{ name: 'Paraguay', value: 'Paraguay' },
 	{ name: 'Peru', value: 'Peru' },
 	{ name: 'Philippines', value: 'Philippines' },
 	{ name: 'Poland', value: 'Poland' },
 	{ name: 'Portugal', value: 'Portugal' },
-	{ name: 'Puerto Rico', value: 'Puerto Rico' },
+	{ name: 'Puerto Rico', value: 'PuertoRico' },
 	{ name: 'Qatar', value: 'Qatar' },
-	{ name: 'Republic of Lithuania', value: 'Republic of Lithuania' },
-	{ name: 'Republic of Moldova', value: 'Republic of Moldova' },
+	{ name: 'Republic of Lithuania', value: 'RepublicofLithuania' },
+	{ name: 'Republic of Moldova', value: 'RepublicofMoldova' },
 	{ name: 'Romania', value: 'Romania' },
 	{ name: 'Russia', value: 'Russia' },
-	{ name: 'Saudi Arabia', value: 'Saudi Arabia' },
+	{ name: 'Saudi Arabia', value: 'SaudiArabia' },
 	{ name: 'Senegal', value: 'Senegal' },
 	{ name: 'Serbia', value: 'Serbia' },
 	{ name: 'Seychelles', value: 'Seychelles' },
@@ -104,10 +104,10 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Slovakia', value: 'Slovakia' },
 	{ name: 'Slovenia', value: 'Slovenia' },
 	{ name: 'Somalia', value: 'Somalia' },
-	{ name: 'South Africa', value: 'South Africa' },
-	{ name: 'South Korea', value: 'South Korea' },
+	{ name: 'South Africa', value: 'SouthAfrica' },
+	{ name: 'South Korea', value: 'SouthKorea' },
 	{ name: 'Spain', value: 'Spain' },
-	{ name: 'Sri Lanka', value: 'Sri Lanka' },
+	{ name: 'Sri Lanka', value: 'SriLanka' },
 	{ name: 'Sudan', value: 'Sudan' },
 	{ name: 'Suriname', value: 'Suriname' },
 	{ name: 'Sweden', value: 'Sweden' },
@@ -116,16 +116,42 @@ export const Static_Country_Proxies: INodePropertyOptions[] = [
 	{ name: 'Taiwan', value: 'Taiwan' },
 	{ name: 'Tajikistan', value: 'Tajikistan' },
 	{ name: 'Thailand', value: 'Thailand' },
-	{ name: 'Trinidad and Tobago', value: 'Trinidad and Tobago' },
+	{ name: 'Trinidad and Tobago', value: 'TrinidadandTobago' },
 	{ name: 'Tunisia', value: 'Tunisia' },
 	{ name: 'Turkey', value: 'Turkey' },
 	{ name: 'Uganda', value: 'Uganda' },
 	{ name: 'Ukraine', value: 'Ukraine' },
-	{ name: 'United Arab Emirates', value: 'United Arab Emirates' },
-	{ name: 'United Kingdom', value: 'United Kingdom' },
-	{ name: 'United States', value: 'United States' },
+	{ name: 'United Arab Emirates', value: 'UnitedArabEmirates' },
+	{ name: 'United Kingdom', value: 'UnitedKingdom' },
+	{ name: 'United States', value: 'UnitedStates' },
 	{ name: 'Uzbekistan', value: 'Uzbekistan' },
 	{ name: 'Venezuela', value: 'Venezuela' },
 	{ name: 'Vietnam', value: 'Vietnam' },
 	{ name: 'Zambia', value: 'Zambia' },
 ];
+
+export const isExpression = (value: unknown): boolean => {
+	if (typeof value !== 'string') return false;
+	return value.trim().startsWith('={{') && value.trim().endsWith('}}');
+};
+export const evaluateExpression = (
+	eFn: IExecuteFunctions,
+	value: unknown,
+	itemIndex: number = 0,
+): unknown => {
+	if (!isExpression(value)) return value;
+
+	const expressionString = (value as string).trim();
+	// Remove the '=' from '={{' as it's just a marker in the workflow JSON
+	if (expressionString.startsWith('=')) {
+		try {
+			// Pass the expression without the leading '='
+			return eFn.evaluateExpression(expressionString.substring(1), itemIndex);
+		} catch (error) {
+			console.warn(`Failed to evaluate expression: ${expressionString}`, error);
+			return value; // Return original value if evaluation fails
+		}
+	}
+
+	return value;
+};

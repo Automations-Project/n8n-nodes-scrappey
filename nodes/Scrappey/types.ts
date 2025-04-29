@@ -21,4 +21,7 @@ export interface ScrappeyRequestBody {
 	proxy?: string;
 	bodyParameters?: any;
 	postData?: string;
+	proxyCountry?: string;
+	// For proxy types and other dynamic properties
+	[key: string]: string | boolean | number | any | undefined;
 }

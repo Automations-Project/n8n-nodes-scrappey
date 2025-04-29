@@ -1,9 +1,11 @@
+import { evaluateExpression, isExpression } from './utils';
+import { IExecuteFunctions } from 'n8n-workflow';
 type BodyEntry = Record<
 	string,
 	string | number | boolean | Object | BodyEntry[] | Record<string, string>
 >;
 let body: BodyEntry = {};
-import { IExecuteFunctions } from 'n8n-workflow';
+
 const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {
 	switch (choice) {
 		case 'Browser':
@@ -82,6 +84,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', 0, '') as string;
 	const customProxy = eFn.getNodeParameter('custom_proxy', 0, false) as boolean;
 	const allowProxy = eFn.getNodeParameter('allowProxy', 0, false) as boolean;
+	const attempts = eFn.getNodeParameter('attempts', 0, 3) as number;
 	//*************************************************************
 	// Adding Keys if they have values
 	//*************************************************************
@@ -114,7 +117,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 				}
 			});
 			body.customHeaders = headersObj;
-		} else body.customHeaders = customHeaders;
+		}
 	}
 
 	// Handle Custom cookies keys and values
@@ -145,6 +148,9 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		if (customProxy === true) body.proxy = credentials.proxyUrl;
 	}
 
+	// Always add attempts regardless of whitelistedDomains
+	body.attempts = attempts;
+
 	if (credentials?.whitelistedDomains) {
 		// Ensure whitelistedDomains is passed as an array
 		const domains = Array.isArray(credentials.whitelistedDomains)
@@ -164,7 +170,20 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 	// Process the method for the cmd property
 	const processedMethod = typeof method === 'string' ? method.toLowerCase() : method;
 	const cmd = `request.${processedMethod}`;
-	let url = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
+	let urlRaw = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
+
+	// Evaluate the URL if it's an expression
+	urlRaw = evaluateExpression(eFn, urlRaw, 0) as string;
+
+	// Only remove trailing slash if it's not an expression
+	if (typeof urlRaw === 'string' && !isExpression(urlRaw) && urlRaw.endsWith('/')) {
+		urlRaw = urlRaw.slice(0, -1);
+	}
+
+	const url = urlRaw;
+
+	// For URL, we need to be careful not to modify expressions
+	// If it's not an expression and ends with '/', remove the trailing slash later
 	const authentication = eFn.getNodeParameter(
 		'authentication',
 		0,
@@ -194,8 +213,11 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 	);
 
 	// Process headers
-	const processedHeaders: Record<string, string> = {};
+	let processedHeaders: Record<string, string> | undefined = undefined;
 	if (headerParameters) {
+		// Initialize the object only if we have headers to process
+		const tempHeaders: Record<string, string> = {};
+
 		// Handle different possible formats of headerParameters
 		if (typeof headerParameters === 'object') {
 			const headerParams = headerParameters as any;
@@ -204,13 +226,18 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 			if (Array.isArray(headerParams.parameters)) {
 				for (const header of headerParams.parameters) {
 					if (header.name && header.value) {
-						processedHeaders[header.name] = header.value;
+						tempHeaders[header.name] = header.value;
 					}
 				}
 			} else if (typeof headerParams === 'object') {
 				// If headerParams is already a key-value object, use it directly
-				Object.assign(processedHeaders, headerParams);
+				Object.assign(tempHeaders, headerParams);
 			}
+		}
+
+		// Only set processedHeaders if we actually have any headers
+		if (Object.keys(tempHeaders).length > 0) {
+			processedHeaders = tempHeaders;
 		}
 	}
 
@@ -264,11 +291,6 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 		}
 	}
 
-	// Remove trailing slash from URL if it exists
-	if (url.endsWith('/')) {
-		url = url.slice(0, -1);
-	}
-
 	// Handle query parameters if they exist
 	if (queryParameters) {
 		const qParams = queryParameters;
@@ -281,29 +303,6 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 			Array.isArray(qParams.parameters) &&
 			qParams.parameters.length > 0
 		) {
-			const urlObj = new URL(url);
-
-			// Add each query parameter to the URL
-			for (const param of qParams.parameters) {
-				if (param && typeof param === 'object' && 'name' in param && 'value' in param) {
-					urlObj.searchParams.append(param.name as string, param.value as string);
-				}
-			}
-
-			// Update the URL with query parameters
-			url = urlObj.toString();
-		} else if (typeof qParams === 'object' && qParams !== null) {
-			// If qParams is already a key-value object, use it directly
-			const urlObj = new URL(url);
-
-			for (const [key, value] of Object.entries(qParams)) {
-				if (key && value !== undefined) {
-					urlObj.searchParams.append(key, String(value));
-				}
-			}
-
-			// Update the URL with query parameters
-			url = urlObj.toString();
 		}
 	}
 	return {

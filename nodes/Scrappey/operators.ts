@@ -5,7 +5,6 @@ export const scrappeyOperators: INodeProperties[] = [
 		name: 'scrappeyOperations',
 		type: 'options',
 		default: 'requestBuilder',
-		// eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
 		options: [
 			{
 				name: 'Request Builder',
@@ -22,7 +21,7 @@ export const scrappeyOperators: INodeProperties[] = [
 			},
 			{
 				name: 'Browser Request • Auto-Retry & Anti-Bot',
-				value: 'browserRequestAutoRetry',
+				value: 'httpRequestAutoRetryBrowser',
 				description:
 					'Executes a browser-based request with built-in anti-bot techniques (movement emulation, hCaptcha/Cloudflare bypass, etc.) and automatically retries if protection pages are encountered',
 				action: 'Handle Error HTTPs Node (Browser)',

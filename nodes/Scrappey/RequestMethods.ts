@@ -4,14 +4,16 @@ import { genericHttpRequest } from '../../GenericFunctions';
 import type { ScrappeyRequestBody } from './types';
 
 export const PostRequest = async function (this: IExecuteFunctions) {
-	const body = handleBody(this);
+	const body = await handleBody(this);
 	const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	return response;
+	return {
+		response,
+	};
 };
 
 export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 	const prev_HTTPRequest = await HTTPRequest_Extract_Parameters(this);
-	// Create body with the specified interface
+	const proxyType = this.getNodeParameter('proxyType', 0, '') as string;
 
 	let body: ScrappeyRequestBody = {
 		cmd: prev_HTTPRequest.cmd,
@@ -32,6 +34,11 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 		body.proxy = prev_HTTPRequest.processedProxy;
 	}
 
+	// Set proxyType if provided
+	if (proxyType && proxyType.trim() !== '') {
+		body[proxyType] = true;
+	}
+
 	// Set post data if available from the processed data
 	if (prev_HTTPRequest.processedPostData) {
 		body.postData = prev_HTTPRequest.processedPostData;
@@ -41,13 +48,18 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}
 	}
+
 	const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	return response;
+	return {
+		response,
+		_debug: body,
+	};
 };
 
 export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 	const prev_HTTPRequest = await HTTPRequest_Extract_Parameters(this);
-	// Create body with the specified interface
+	const customProxyCountry = this.getNodeParameter('customProxyCountry', 0, '');
+	const proxyType = this.getNodeParameter('proxyType', 0, '') as string;
 
 	let body: ScrappeyRequestBody = {
 		cmd: prev_HTTPRequest.cmd,
@@ -62,6 +74,13 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 	// Set proxy if available from the processed data
 	if (prev_HTTPRequest.processedProxy) {
 		body.proxy = prev_HTTPRequest.processedProxy;
+	} else {
+		body.proxyCountry = customProxyCountry as string;
+	}
+
+	// Set proxyType if provided
+	if (proxyType && proxyType.trim() !== '') {
+		body[proxyType] = true;
 	}
 
 	// Set post data if available from the processed data
@@ -73,7 +92,9 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}
 	}
-
 	const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	return response;
+	return {
+		response,
+		_debug: body,
+	};
 };
