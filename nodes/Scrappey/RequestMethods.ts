@@ -53,7 +53,7 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 
 export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 	const prev_HTTPRequest = await HTTPRequest_Extract_Parameters(this);
-	const customProxyCountry = this.getNodeParameter('customProxyCountry', 0, '');
+	const customProxyCountry = this.getNodeParameter('customProxyCountry', 0, '') as string;
 	const proxyType = this.getNodeParameter('proxyType', 0, '') as string;
 
 	let body: ScrappeyRequestBody = {
@@ -68,7 +68,9 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 	if (prev_HTTPRequest.processedProxy) {
 		body.proxy = prev_HTTPRequest.processedProxy;
 	} else {
-		body.proxyCountry = customProxyCountry as string;
+		if (customProxyCountry && customProxyCountry.trim() !== '') {
+			body.proxyCountry = customProxyCountry;
+		}
 	}
 
 	if (proxyType && proxyType.trim() !== '') {

@@ -7,13 +7,6 @@ import { INodeProperties } from 'n8n-workflow';
 import { Static_Country_Proxies } from './utils';
 export const publicFields: INodeProperties[] = [
 	{
-		displayName:
-			'✨ Feel free to support us by using our Scrappey <a href="https://scrappey.com/?ref=karek" target="_blank">Affiliate Link</a> ✨ Thanks for your support! 💖',
-		name: 'affiliateMessage',
-		type: 'notice',
-		default: '',
-	},
-	{
 		displayName: 'Allow using Credential Proxy?',
 		name: 'allowCredinitalProxy',
 		type: 'boolean',
@@ -188,7 +181,7 @@ export const publicFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'User Session',
-		name: 'userSeason',
+		name: 'userSession',
 		type: 'string',
 		default: uuidGenerate(),
 		hint: 'User session identifier to use for the request',
@@ -198,7 +191,11 @@ export const publicFields: INodeProperties[] = [
 				scrappeyOperations: ['requestBuilder'],
 			},
 		},
+		typeOptions: {
+			loadOptionsDependsOn: ['refreshSession'],
+		},
 	},
+
 	{
 		displayName: 'Custom Headers',
 		name: 'customHeaders',
@@ -320,6 +317,7 @@ export const publicFields: INodeProperties[] = [
 					'httpRequestAutoRetry',
 					'httpRequestAutoRetryBrowser',
 				],
+				proxyType: ['premiumProxy', 'datacenter', 'mobileProxy'],
 			},
 		},
 	},
@@ -346,6 +344,7 @@ export const publicFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				scrappeyOperations: ['requestBuilder'],
+				proxyType: [''],
 			},
 		},
 	},

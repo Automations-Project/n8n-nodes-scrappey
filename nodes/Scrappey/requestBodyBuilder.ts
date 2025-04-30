@@ -73,7 +73,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const bodyOrParams = eFn.getNodeParameter('bodyOrParams', 0, '') as string;
 	const params_for_request = eFn.getNodeParameter('params_for_request', 0, '') as string;
 	const body_for_request = eFn.getNodeParameter('body_for_request', 0, '') as string;
-	const userSeason = eFn.getNodeParameter('userSeason', 0, '') as string;
+	const userSession = eFn.getNodeParameter('userSession', 0, '') as string;
 	const customHeaders = eFn.getNodeParameter('customHeaders', 0, {}) as Record<string, string>;
 	const customCookies = eFn.getNodeParameter('customCookies', 0, {}) as Record<string, string>;
 	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', 0, '') as string;
@@ -86,7 +86,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 
 	if (proxyType && proxyType.trim() !== '') body[proxyType] = true;
 
-	if (userSeason && userSeason.trim() !== '') body.session = userSeason;
+	if (userSession && userSession.trim() !== '') body.session = userSession;
 
 	if (httpMethod !== 'request.get') {
 		if (bodyOrParams) {
