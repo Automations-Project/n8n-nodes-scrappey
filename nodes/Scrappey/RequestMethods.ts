@@ -1,6 +1,6 @@
 import { IExecuteFunctions } from 'n8n-workflow';
 import { handleBody, HTTPRequest_Extract_Parameters } from './requestBodyBuilder';
-import { genericHttpRequest } from '../../GenericFunctions';
+import { genericHttpRequest } from './GenericFunctions';
 import type { ScrappeyRequestBody } from './types';
 
 export const PostRequest = async function (this: IExecuteFunctions) {
