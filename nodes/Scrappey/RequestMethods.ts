@@ -5,9 +5,8 @@ import { genericHttpRequest } from './GenericFunctions';
 
 export const PostRequest = async function (this: IExecuteFunctions) {
 	const body = await handleBody(this);
-	// const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	// return response;
-	return body;
+	const response = await genericHttpRequest.call(this, 'POST', '', { body });
+	return response;
 };
 
 export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
