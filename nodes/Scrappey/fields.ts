@@ -7,6 +7,18 @@ import { INodeProperties } from 'n8n-workflow';
 import { Static_Country_Proxies } from './utils';
 export const publicFields: INodeProperties[] = [
 	{
+		displayName:
+			'⚠️This is a fallback solution and works only if the previous node is an HTTP node. <br/><br/>🚦 For best results, connect the error path of the HTTP node to this operation. <br/><br/> 👉 See the <a href="https://source.n8n.community/scrappey-example-workflow-fallback" target="_blank">example workflow</a>.',
+		name: 'affiliateMessage',
+		type: 'notice',
+		default: '',
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['httpRequestAutoRetry', 'httpRequestAutoRetryBrowser'],
+			},
+		},
+	},
+	{
 		displayName: 'Allow using Credential Proxy?',
 		name: 'allowCredinitalProxy',
 		type: 'boolean',

@@ -45,23 +45,6 @@ export class Scrappey implements INodeType {
 				'Content-Type': 'application/json',
 			},
 		},
-		properties: [
-			{
-				displayName: 'Resource',
-				name: 'resource',
-				type: 'options',
-				noDataExpression: true,
-				default: 'operators',
-				options: [
-					{
-						name: 'Operator',
-						value: 'operators',
-					},
-				],
-			},
-			...scrappeyOperators,
-			...publicFields,
-			...AdvancedSettingsForBrowser,
-		],
+		properties: [...scrappeyOperators, ...publicFields, ...AdvancedSettingsForBrowser],
 	};
 }

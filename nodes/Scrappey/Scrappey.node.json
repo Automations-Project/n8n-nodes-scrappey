@@ -1,18 +1,21 @@
 {
-	"node": "n8n-nodes-scrappey",
-	"nodeVersion": "1.0",
-	"codexVersion": "1.0",
-	"categories": ["Development", "Web Scraping"],
-	"resources": {
-		"credentialDocumentation": [
-			{
-				"url": "https://wiki.scrappey.com"
-			}
-		],
-		"primaryDocumentation": [
-			{
-				"url": "https://wiki.scrappey.com"
-			}
-		]
-	}
+  "node": "n8n-nodes-scrappey",
+  "nodeVersion": "0.1.4",
+  "codexVersion": "0.1.4",
+  "categories": [
+    "Development",
+    "Web Scraping"
+  ],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://wiki.scrappey.com"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://wiki.scrappey.com"
+      }
+    ]
+  }
 }

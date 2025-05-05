@@ -1,6 +1,6 @@
 {
 	"name": "@automations-project/n8n-nodes-scrappey",
-	"version": "0.1.2",
+	"version": "0.1.4",
 	"description": "n8n node package for Scrappey API integration",
 	"keywords": [
 		"n8n-community-node-package"
@@ -26,8 +26,9 @@
 	},
 	"scripts": {
 		"build": "tsc && gulp build:icons",
-		"deploy": "node scripts/deploy.js",
-		"start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start"
+		"deploy": "node scripts/update-node-json.js && node scripts/deploy.js",
+		"start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start",
+		"clean": "rm -rf node_modules pnpm-lock.yaml package-lock.json dist"
 	},
 	"files": [
 		"dist"
