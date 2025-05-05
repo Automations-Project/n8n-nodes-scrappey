@@ -77,6 +77,11 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const customHeaders = eFn.getNodeParameter('customHeaders', 0, {}) as Record<string, string>;
 	const customCookies = eFn.getNodeParameter('customCookies', 0, {}) as Record<string, string>;
 	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', 0, '') as string;
+	const customProxyCountryBoolean = eFn.getNodeParameter(
+		'customProxyCountryBoolean',
+		0,
+		false,
+	) as boolean;
 	const customProxy = eFn.getNodeParameter('custom_proxy', 0, false) as boolean;
 	const allowProxy = eFn.getNodeParameter('allowProxy', 0, false) as boolean;
 	const attempts = eFn.getNodeParameter('attempts', 0, 3) as number;
@@ -130,8 +135,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		body.cookies = cookieString;
 	}
 
-	if (customProxyCountry && customProxyCountry.trim() !== '')
-		body.proxyCountry = customProxyCountry;
+	if (customProxyCountryBoolean) body.proxyCountry = customProxyCountry;
 
 	if (allowProxy) {
 		if (customProxy === true) body.proxy = credentials.proxyUrl;
@@ -220,17 +224,27 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 	}
 
 	let processedProxy: string | undefined;
-	try {
-		const credentials = await eFn.getCredentials('scrappeyApi');
-		const allowCredentialProxy = eFn.getNodeParameter('allowCredinitalProxy', 0, false) as boolean;
-		if (allowCredentialProxy && credentials?.proxyUrl) {
-			processedProxy = String(credentials.proxyUrl);
-		} else if (proxy) {
-			processedProxy = proxy as string;
+	const whichProxyToUse = eFn.getNodeParameter(
+		'whichProxyToUse',
+		0,
+		'proxyFromCredentials',
+	) as string;
+	switch (whichProxyToUse) {
+		case 'proxyFromCredentials': {
+			const credentials = await eFn.getCredentials('scrappeyApi');
+			if (credentials?.proxyUrl) {
+				processedProxy = String(credentials.proxyUrl);
+			}
+			break;
 		}
-	} catch (error) {
-		if (proxy) {
-			processedProxy = proxy as string;
+		case 'proxyFromNode': {
+			if (proxy) {
+				processedProxy = proxy as string;
+			}
+			break;
+		}
+		case 'proxyFromScrappey': {
+			break;
 		}
 	}
 

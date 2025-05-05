@@ -19,19 +19,6 @@ export const publicFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Allow using Credential Proxy?',
-		name: 'allowCredinitalProxy',
-		type: 'boolean',
-		default: false,
-		hint: 'Override proxy settings from HTTP-Request Node. When enabled, any proxy configured in the HTTP-Request Node will be ignored, even if available.',
-		required: false,
-		displayOptions: {
-			show: {
-				scrappeyOperations: ['httpRequestAutoRetry', 'httpRequestAutoRetryBrowser'],
-			},
-		},
-	},
-	{
 		displayName: 'URL',
 		name: 'url',
 		type: 'string',
@@ -315,6 +302,23 @@ export const publicFields: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Custom proxy country',
+		name: 'customProxyCountryBoolean',
+		type: 'boolean',
+		default: false,
+		hint: 'Use a custom proxy country',
+		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
+			},
+		},
+	},
+	{
 		displayName: 'Custom Proxy Country',
 		name: 'customProxyCountry',
 		type: 'options',
@@ -329,7 +333,35 @@ export const publicFields: INodeProperties[] = [
 					'httpRequestAutoRetry',
 					'httpRequestAutoRetryBrowser',
 				],
-				proxyType: ['premiumProxy', 'datacenter', 'mobileProxy'],
+				customProxyCountryBoolean: [true],
+			},
+		},
+	},
+	{
+		displayName: 'Which Proxy To Use',
+		name: 'whichProxyToUse',
+		type: 'options',
+		options: [
+			{
+				name: 'Proxy From Credentials',
+				value: 'proxyFromCredentials',
+				description: 'Use the proxy defined in credentials for this request',
+			},
+			{
+				name: 'Proxy From HTTP Request Node',
+				value: 'proxyFromNode',
+				description: 'Use the proxy defined in HTTP Request Node for this request',
+			},
+			{
+				name: 'Proxy From Scrappey',
+				value: 'proxyFromScrappey',
+				description: 'Use the proxy defined in Scrappey for this request',
+			},
+		],
+		default: 'proxyFromCredentials',
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['httpRequestAutoRetry', 'httpRequestAutoRetryBrowser'],
 			},
 		},
 	},

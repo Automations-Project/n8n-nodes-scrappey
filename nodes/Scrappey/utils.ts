@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodePropertyOptions } from 'n8n-workflow';
 
 export const Static_Country_Proxies: INodePropertyOptions[] = [
-	{ name: 'None', value: '' },
 	{ name: 'Afghanistan', value: 'Afghanistan' },
 	{ name: 'Albania', value: 'Albania' },
 	{ name: 'Algeria', value: 'Algeria' },
