@@ -261,7 +261,10 @@ export const publicFields: INodeProperties[] = [
 		displayName: 'JSON Headers',
 		name: 'jsonHeaders',
 		type: 'string',
-		default: '{"User-Agent": "Mozilla/5.0", "Accept": "application/json"}',
+		default: '{
+  "User-Agent": "Mozilla/5.0",
+  "Accept": "application/json"
+}',
 		hint: 'Enter headers as a JSON object',
 		required: false,
 		displayOptions: {

@@ -74,7 +74,9 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const params_for_request = eFn.getNodeParameter('params_for_request', 0, '') as string;
 	const body_for_request = eFn.getNodeParameter('body_for_request', 0, '') as string;
 	const userSession = eFn.getNodeParameter('userSession', 0, '') as string;
+	const headersInputMethod = eFn.getNodeParameter('headersInputMethod', 0, 'fields') as string;
 	const customHeaders = eFn.getNodeParameter('customHeaders', 0, {}) as Record<string, string>;
+	const jsonHeaders = eFn.getNodeParameter('jsonHeaders', 0, '') as string;
 	const customCookies = eFn.getNodeParameter('customCookies', 0, {}) as Record<string, string>;
 	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', 0, '') as string;
 	const customProxyCountryBoolean = eFn.getNodeParameter(
@@ -102,16 +104,32 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 		} else body.postData = params_for_request;
 	}
 
-	if (customHeaders && Object.keys(customHeaders).length > 0) {
-		const headersObj: Record<string, string> = {};
+	// Handle headers based on input method
+	if (headersInputMethod === 'fields') {
+		// Process headers from fields
+		if (customHeaders && Object.keys(customHeaders).length > 0) {
+			const headersObj: Record<string, string> = {};
 
-		if (customHeaders.headers && Array.isArray(customHeaders.headers)) {
-			customHeaders.headers.forEach((header: any) => {
-				if (header.header_key && header.header_value) {
-					headersObj[header.header_key] = header.header_value;
+			if (customHeaders.headers && Array.isArray(customHeaders.headers)) {
+				customHeaders.headers.forEach((header: any) => {
+					if (header.header_key && header.header_value) {
+						headersObj[header.header_key] = header.header_value;
+					}
+				});
+				body.customHeaders = headersObj;
+			}
+		}
+	} else if (headersInputMethod === 'json') {
+		// Process headers from JSON
+		if (jsonHeaders && jsonHeaders.trim() !== '') {
+			try {
+				const headersObj = JSON.parse(jsonHeaders);
+				if (headersObj && typeof headersObj === 'object') {
+					body.customHeaders = headersObj;
 				}
-			});
-			body.customHeaders = headersObj;
+			} catch (error) {
+				throw new Error(`Invalid JSON headers format: ${error.message}`);
+			}
 		}
 	}
 
