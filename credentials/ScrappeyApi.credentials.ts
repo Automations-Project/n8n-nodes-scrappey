@@ -3,7 +3,7 @@ import { ICredentialType, INodeProperties } from 'n8n-workflow';
 export class ScrappeyApi implements ICredentialType {
 	name = 'scrappeyApi';
 	displayName = 'Scrappey API';
-	icon = 'file:scrappey.svg' as const;
+	icon = 'file:Scrappey.svg' as const;
 	documentationUrl = 'https://wiki.scrappey.com';
 	properties: INodeProperties[] = [
 		{

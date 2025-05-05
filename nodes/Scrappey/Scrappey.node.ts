@@ -20,16 +20,17 @@ export class Scrappey implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Scrappey',
 		name: 'scrappey',
-		icon: 'file:scrappey.svg',
+		icon: 'file:Scrappey.svg',
 		group: ['web-scraping'],
 		version: 1,
-		subtitle: '={{$parameter["scrappeyOperations"]}}',
+		subtitle:
+			'={{ { requestBuilder: "🛠️ Request Builder", httpRequestAutoRetry: "🔁 Auto • HTTP Mode", httpRequestAutoRetryBrowser: "🌐 Auto • Browser Mode" }[$parameter["scrappeyOperations"]] }}',
 		description: 'Make advanced web requests with anti-bot protection bypass using Scrappey API',
 		defaults: {
 			name: 'scrappey',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: ['main'] as unknown as INodeTypeDescription['inputs'],
+		outputs: ['main'] as unknown as INodeTypeDescription['outputs'],
 		credentials: [
 			{
 				name: 'scrappeyApi',
