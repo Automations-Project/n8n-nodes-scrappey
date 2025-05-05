@@ -101,6 +101,7 @@ export const publicFields: INodeProperties[] = [
 					'httpRequestAutoRetry',
 					'httpRequestAutoRetryBrowser',
 				],
+				whichProxyToUse: ['proxyFromScrappey'],
 			},
 		},
 	},
@@ -315,6 +316,7 @@ export const publicFields: INodeProperties[] = [
 					'httpRequestAutoRetry',
 					'httpRequestAutoRetryBrowser',
 				],
+				whichProxyToUse: ['proxyFromScrappey'],
 			},
 		},
 	},
@@ -361,7 +363,11 @@ export const publicFields: INodeProperties[] = [
 		default: 'proxyFromCredentials',
 		displayOptions: {
 			show: {
-				scrappeyOperations: ['httpRequestAutoRetry', 'httpRequestAutoRetryBrowser'],
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
 			},
 		},
 	},
@@ -389,6 +395,7 @@ export const publicFields: INodeProperties[] = [
 			show: {
 				scrappeyOperations: ['requestBuilder'],
 				proxyType: [''],
+				whichProxyToUse: ['proxyFromScrappey'],
 			},
 		},
 	},

@@ -1,20 +1,22 @@
 import { IExecuteFunctions } from 'n8n-workflow';
 import { handleBody, HTTPRequest_Extract_Parameters } from './requestBodyBuilder';
-// import { genericHttpRequest } from './GenericFunctions';
 import type { ScrappeyRequestBody } from './types';
+import { genericHttpRequest } from './GenericFunctions';
 
 export const PostRequest = async function (this: IExecuteFunctions) {
 	const body = await handleBody(this);
-	return body;
-	// const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	// return {
-	// 	response,
-	// };
+	const response = await genericHttpRequest.call(this, 'POST', '', { body });
+	return response;
 };
 
 export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 	const prev_HTTPRequest = await HTTPRequest_Extract_Parameters(this);
 	const proxyType = this.getNodeParameter('proxyType', 0, '') as string;
+	const whichProxyToUse = this.getNodeParameter(
+		'whichProxyToUse',
+		0,
+		'proxyFromCredentials',
+	) as string;
 
 	let body: ScrappeyRequestBody = {
 		cmd: prev_HTTPRequest.cmd,
@@ -29,13 +31,30 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 		body.customHeaders = prev_HTTPRequest.processedHeaders;
 	}
 
-	if (prev_HTTPRequest.processedProxy) {
+	// Handle proxy settings based on the selected proxy source
+	if (whichProxyToUse === 'proxyFromScrappey') {
+		// Apply proxy type
+		if (proxyType && proxyType.trim() !== '') {
+			body[proxyType] = true;
+		}
+
+		// Check if custom proxy country is enabled
+		const customProxyCountryBoolean = this.getNodeParameter(
+			'customProxyCountryBoolean',
+			0,
+			false,
+		) as boolean;
+
+		if (customProxyCountryBoolean) {
+			const customProxyCountry = this.getNodeParameter('customProxyCountry', 0, '') as string;
+			if (customProxyCountry && customProxyCountry.trim() !== '') {
+				body.country = customProxyCountry;
+			}
+		}
+	} else if (whichProxyToUse === 'proxyFromNode' && prev_HTTPRequest.processedProxy) {
 		body.proxy = prev_HTTPRequest.processedProxy;
 	}
-
-	if (proxyType && proxyType.trim() !== '') {
-		body[proxyType] = true;
-	}
+	// For proxyFromCredentials, proxy is handled by the credentials
 
 	if (prev_HTTPRequest.processedPostData) {
 		body.postData = prev_HTTPRequest.processedPostData;
@@ -44,12 +63,8 @@ export const AutoRetryTypeBrowser = async function (this: IExecuteFunctions) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}
 	}
-	return body;
-	// const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	// return {
-	// 	response,
-	// 	_debug: body,
-	// };
+	const response = await genericHttpRequest.call(this, 'POST', '', { body });
+	return response;
 };
 
 export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
@@ -90,10 +105,6 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 			body.customHeaders['content-type'] = prev_HTTPRequest.contentType;
 		}
 	}
-	return body;
-	// const response = await genericHttpRequest.call(this, 'POST', '', { body });
-	// return {
-	// 	response,
-	// 	_debug: body,
-	// };
+	const response = await genericHttpRequest.call(this, 'POST', '', { body });
+	return response;
 };
