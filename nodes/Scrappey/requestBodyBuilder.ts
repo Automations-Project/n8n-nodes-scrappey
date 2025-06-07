@@ -1,4 +1,3 @@
-
 import { IExecuteFunctions } from 'n8n-workflow';
 type BodyEntry = Record<
 	string,
@@ -47,7 +46,14 @@ const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: n
 					console.log(`Evaluated value: ${value}`);
 
 					// Replace the expression in the URL
-					const stringValue = value !== undefined && value !== null ? String(value) : '';
+					let stringValue = value !== undefined && value !== null ? String(value) : '';
+
+					// Remove any leading equals sign from the evaluated value to prevent double equals in URLs
+					if (stringValue.startsWith('=')) {
+						stringValue = stringValue.substring(1);
+						console.log(`Removed leading equals sign, new value: ${stringValue}`);
+					}
+
 					processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
 				} catch (error) {
 					console.log(`Error evaluating expression ${expr}: ${error.message}`);
@@ -90,7 +96,14 @@ const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: n
 				console.log(`Evaluated value: ${value}`);
 
 				// Replace the expression in the URL
-				const stringValue = value !== undefined && value !== null ? String(value) : '';
+				let stringValue = value !== undefined && value !== null ? String(value) : '';
+
+				// Remove any leading equals sign from the evaluated value to prevent double equals in URLs
+				if (stringValue.startsWith('=')) {
+					stringValue = stringValue.substring(1);
+					console.log(`Removed leading equals sign, new value: ${stringValue}`);
+				}
+
 				processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
 			} catch (error) {
 				console.log(`Error evaluating expression ${expr}: ${error.message}`);
