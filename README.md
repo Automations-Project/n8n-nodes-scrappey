@@ -1,46 +1,112 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+![Banner](banner.webp)
+Scrappey n8n Node
 
-# n8n-nodes-starter
+Welcome to the official documentation for the Scrappey node for n8n. This node empowers your workflows to make advanced, resilient web requests and bypass sophisticated anti-bot protections using the Scrappey.com API.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](n8n.io). It includes the node linter and other dependencies.
+Whether you need to perform simple GET requests or execute complex browser-based scraping with automated CAPTCHA solving, this node provides a robust set of tools to get the data you need.
+Features
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+    Multiple Operation Modes: Choose between a flexible Request Builder or two powerful auto-retry modes for handling failed requests from standard n8n nodes.
 
-## Prerequisites
+    Anti-Bot Bypass: Seamlessly handle Cloudflare, Datadome, hCaptcha, and reCAPTCHA challenges.
 
-You need the following installed on your development machine:
+    Flexible Proxy Management: Utilize proxies from your Scrappey account, define them in credentials, or pass them from a previous HTTP Request node.
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 18. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  pnpm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+    Advanced Browser Simulation: Go beyond standard HTTP requests by simulating real browser actions, including mouse movements, for websites that rely on JavaScript.
 
-## Using this starter
+    Detailed Request Customization: Fine-tune every aspect of your request, including HTTP methods, headers, cookies, and post data.
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+    Built-in Error Handling: The node provides clear, specific error messages for Scrappey API error codes to simplify debugging.
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `pnpm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `pnpm lint` to check for errors or `pnpm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+Prerequisites
 
-## More information
+Before using this node, you must have a Scrappey account and an API key.
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+    Sign up on Scrappey.com.
 
-## License
+    Find your API key in your account dashboard.
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+    Add your API key to the scrappeyApi credentials in your n8n instance.
+
+Operations
+
+The Scrappey node offers three distinct operations to suit different use cases.
+1. Request Builder
+
+This is the primary mode for creating highly customized requests directly within the node. It's the most flexible option, giving you granular control over every aspect of the web request.
+
+Key Configuration Options:
+
+    Request Type:
+
+        Request: Makes a standard HTTP request. It's fast and efficient for accessing APIs or static content.
+
+        Browser: Simulates a real web browser (Chromium). Use this for scraping dynamic websites that render content using JavaScript.
+
+        Patched Chrome Browser: A specialized browser option for advanced use cases.
+
+    URL & HTTP Method: Specify the target URL and the HTTP method (GET, POST, PUT, etc.).
+
+    Proxy Options:
+
+        Which Proxy To Use:
+
+            Proxy From Credentials: Uses the proxy URL defined in your scrappeyApi credentials.
+
+            Proxy From Scrappey: Leverages Scrappey's proxy pool (Residential, Datacenter, Mobile) and allows for country-specific geo-targeting.
+
+            Proxy From HTTP Request Node: (For fallback modes) Uses the proxy from the preceding failed HTTP node.
+
+    Headers & Cookies: Add custom headers and cookies to your request using either key-value fields or a raw JSON object.
+
+    Body & Params: For POST, PUT, and PATCH requests, you can define the request body (e.g., as JSON) or send the data as URL-encoded parameters.
+
+    User Session: Maintain a consistent session for a series of requests.
+
+    Advanced Browser Settings (for Browser Request Type):
+
+        Antibot: Automatically enables solvers for hCaptcha and reCAPTCHA.
+
+        Add Random mouse movement: Simulates human-like mouse movements to appear less like a bot.
+
+        CSS Selector: Wait for a specific element to appear on the page before returning the content.
+
+        Intercept XHR/Fetch Request: Instead of returning the page's HTML, capture and return the response of a specific background API call made by the page.
+
+2. HTTP Request • Auto-Retry on Protection
+
+This operation acts as a fallback for n8n's native HTTP Request node. If a standard HTTP request fails due to anti-bot protection (like a Cloudflare challenge page), you can route its error output to this Scrappey operation.
+
+It automatically re-submits the exact same request (including URL, method, headers, and body) through the Scrappey API, which is designed to handle the protection and retrieve the actual page content.
+
+How to Use:
+
+    Create a standard n8n HTTP Request node.
+
+    Connect its error output (the red dot) to the input of the Scrappey node.
+
+    In the Scrappey node, select the HTTP Request • Auto-Retry on Protection operation.
+
+    Configure the desired Proxy Type and Custom Proxy Country if you wish to use Scrappey's proxy network for the retry.
+
+    👉 See the Example Workflow for a practical demonstration.
+
+3. Browser Request • Auto-Retry & Anti-Bot
+
+This is the most powerful fallback operation. Like the previous mode, it's designed to be connected to the error output of a failed HTTP Request node.
+
+However, instead of making a simple HTTP request, it retries the failed request using a full browser simulation. This approach is highly effective against advanced anti-bot systems that require JavaScript execution or analyze browser fingerprints. It automatically enables:
+
+    Datadome Bypass: True
+
+    Mouse Movements: True
+
+    Automatic Captcha Solving: True
+
+    3 Retries by default.
+
+How to Use:
+This mode is configured identically to the HTTP Request • Auto-Retry operation. Simply connect the error output of a failing node and select this operation for a robust, browser-based retry.
+License
+
+This project is licensed under the MIT License.
