@@ -1,4 +1,4 @@
-import { evaluateExpression } from './utils';
+
 import { IExecuteFunctions } from 'n8n-workflow';
 type BodyEntry = Record<
 	string,
@@ -6,7 +6,7 @@ type BodyEntry = Record<
 >;
 let body: BodyEntry = {};
 
-// Function to process URLs with multiple expressions like {{ $json.key }}
+// Function to process URLs with multiple expressions like {{ $json.key }} or {{ $node["NodeName"].json["key"] }}
 const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: number = 0): string => {
 	// If the URL isn't a string, return it as is
 	if (typeof url !== 'string') return String(url);
@@ -17,88 +17,91 @@ const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: n
 	// If the URL starts with '=', we need special handling
 	if (processedUrl.trim().startsWith('=')) {
 		console.log('URL starts with =, special handling required');
+		// Remove the leading '=' to process manually
+		processedUrl = processedUrl.trim().substring(1);
 
-		// Check if it contains {{ $json.key }} patterns
-		if (processedUrl.includes('{{') && processedUrl.includes('$json.')) {
-			console.log('URL contains {{ $json.key }} patterns, processing manually');
+		// Find all n8n expressions in the URL - handles both simple and complex patterns
+		const expressionRegex = /{{\s*(.*?)\s*}}/g;
+		let match;
+		const expressions: string[] = [];
 
-			// Remove the leading '=' to process manually
-			processedUrl = processedUrl.trim().substring(1);
+		// Extract all expressions from the URL
+		while ((match = expressionRegex.exec(processedUrl)) !== null) {
+			if (match[1]) {
+				expressions.push(match[1]);
+				console.log(`Found expression: ${match[1]}`);
+			}
+		}
 
-			// Replace {{ $json.key }} patterns first
-			processedUrl = processedUrl.replace(/{{\s*\$json\.([a-zA-Z0-9_]+)\s*}}/g, (match, key) => {
-				console.log(`Found key: ${key}, trying to replace`);
+		// If there are expressions, evaluate each one and replace in the URL
+		if (expressions.length > 0) {
+			console.log('URL contains expressions, processing each one');
+			for (const expr of expressions) {
 				try {
-					// Try to get the value from the current execution context
-					const paramName = `$json["${key}"]`;
-					try {
-						const value = eFn.evaluateExpression(`={{ ${paramName} }}`, itemIndex);
-						console.log(`Evaluated value for ${key}: ${value}`);
-						return value !== undefined && value !== null ? String(value) : '';
-					} catch (e) {
-						console.log(`First method failed: ${e.message}, trying alternate method`);
-						try {
-							const value = eFn.getNodeParameter(paramName, itemIndex, '');
-							console.log(`Alternate method value for ${key}: ${value}`);
-							return value !== undefined && value !== null ? String(value) : '';
-						} catch (e2) {
-							console.log(`Both methods failed: ${e2.message}`);
-							return '';
-						}
-					}
-				} catch (error) {
-					console.log(`Error processing key ${key}: ${error.message}`);
-					return '';
-				}
-			});
+					// Create a proper n8n expression to evaluate
+					const fullExpr = `={{ ${expr} }}`;
+					console.log(`Evaluating expression: ${fullExpr}`);
 
+					// Evaluate the expression
+					const value = eFn.evaluateExpression(fullExpr, itemIndex);
+					console.log(`Evaluated value: ${value}`);
+
+					// Replace the expression in the URL
+					const stringValue = value !== undefined && value !== null ? String(value) : '';
+					processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
+				} catch (error) {
+					console.log(`Error evaluating expression ${expr}: ${error.message}`);
+					// If evaluation fails, replace with empty string
+					processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), '');
+				}
+			}
 			console.log(`Final processed URL: ${processedUrl}`);
-			// Now return the processed URL
 			return processedUrl;
 		} else {
-			console.log('URL is a standard n8n expression, using evaluateExpression');
-			// Standard n8n expression without {{ $json.key }} patterns
+			// No expressions found, return the URL without the = prefix
+			return processedUrl;
+		}
+	}
+
+	// For URLs without '=' prefix, find and process expressions
+	const expressionRegex = /{{\s*(.*?)\s*}}/g;
+	let match;
+	const expressions: string[] = [];
+
+	// Extract all expressions from the URL
+	while ((match = expressionRegex.exec(processedUrl)) !== null) {
+		if (match[1]) {
+			expressions.push(match[1]);
+			console.log(`Found expression: ${match[1]}`);
+		}
+	}
+
+	// Process each expression
+	if (expressions.length > 0) {
+		console.log('URL contains expressions, processing each one');
+		for (const expr of expressions) {
 			try {
-				// Use the existing evaluateExpression function which handles '=' prefix
-				const evaluatedUrl = evaluateExpression(eFn, url, itemIndex);
-				console.log(`Evaluated URL: ${evaluatedUrl}`);
-				// Convert to string if the result is not a string
-				return typeof evaluatedUrl === 'string' ? evaluatedUrl : String(evaluatedUrl);
+				// Create a proper n8n expression to evaluate
+				const fullExpr = `={{ ${expr} }}`;
+				console.log(`Evaluating expression: ${fullExpr}`);
+
+				// Evaluate the expression
+				const value = eFn.evaluateExpression(fullExpr, itemIndex);
+				console.log(`Evaluated value: ${value}`);
+
+				// Replace the expression in the URL
+				const stringValue = value !== undefined && value !== null ? String(value) : '';
+				processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
 			} catch (error) {
-				// If evaluation fails, continue with the original URL without the '='
-				console.warn(`Failed to evaluate URL expression: ${url}`, error);
-				return url.trim().substring(1);
+				console.log(`Error evaluating expression ${expr}: ${error.message}`);
+				// If evaluation fails, replace with empty string
+				processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), '');
 			}
 		}
 	}
 
-	console.log('URL does not start with =, processing only {{ $json.key }} patterns');
-	// For URLs without '=' prefix, just handle {{ $json.key }} patterns
-	return processedUrl.replace(/{{\s*\$json\.([a-zA-Z0-9_]+)\s*}}/g, (match, key) => {
-		console.log(`Found key without = prefix: ${key}, trying to replace`);
-		try {
-			// Try to get the value from the current execution context
-			const paramName = `$json["${key}"]`;
-			try {
-				const value = eFn.evaluateExpression(`={{ ${paramName} }}`, itemIndex);
-				console.log(`Evaluated value for ${key}: ${value}`);
-				return value !== undefined && value !== null ? String(value) : '';
-			} catch (e) {
-				console.log(`First method failed: ${e.message}, trying alternate method`);
-				try {
-					const value = eFn.getNodeParameter(paramName, itemIndex, '');
-					console.log(`Alternate method value for ${key}: ${value}`);
-					return value !== undefined && value !== null ? String(value) : '';
-				} catch (e2) {
-					console.log(`Both methods failed: ${e2.message}`);
-					return '';
-				}
-			}
-		} catch (error) {
-			console.log(`Error processing key ${key}: ${error.message}`);
-			return '';
-		}
-	});
+	console.log(`Final processed URL: ${processedUrl}`);
+	return processedUrl;
 };
 
 const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {

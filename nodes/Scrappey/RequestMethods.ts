@@ -107,4 +107,5 @@ export const AutoRetryTypeRequest = async function (this: IExecuteFunctions) {
 	}
 	const response = await genericHttpRequest.call(this, 'POST', '', { body });
 	return response;
+	// return { body };
 };

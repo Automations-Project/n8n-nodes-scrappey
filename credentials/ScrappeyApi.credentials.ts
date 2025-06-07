@@ -25,10 +25,13 @@ export class ScrappeyApi implements ICredentialType {
 			},
 		},
 		{
-			displayName: 'Allow Proxy?',
+			displayName: 'Add your custom proxy',
 			name: 'allowProxy',
 			type: 'boolean',
 			default: false,
+
+
+
 		},
 		{
 			displayName: 'Proxy URL Socks-5 Socks-4 Http Https',

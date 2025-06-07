@@ -71,6 +71,63 @@ export const publicFields: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Request Type',
+		name: 'request_type',
+		type: 'options',
+		default: 'Request',
+		options: [
+			{
+				name: 'Browser',
+				value: 'Browser',
+			},
+			{
+				name: 'Request',
+				value: 'Request',
+			},
+			{
+				name: 'Patched Chrome Browser',
+				value: 'PatchedChrome',
+			},
+		],
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+			},
+		},
+	},
+	{
+		displayName: 'Which Proxy To Use',
+		name: 'whichProxyToUse',
+		type: 'options',
+		options: [
+			{
+				name: 'Proxy From Credentials',
+				value: 'proxyFromCredentials',
+				description: 'Use the proxy defined in credentials for this request',
+			},
+			{
+				name: 'Proxy From HTTP Request Node',
+				value: 'proxyFromNode',
+				description: 'Use the proxy defined in HTTP Request Node for this request',
+			},
+			{
+				name: 'Proxy From Scrappey',
+				value: 'proxyFromScrappey',
+				description: 'Use the proxy defined in Scrappey for this request',
+			},
+		],
+		default: 'proxyFromCredentials',
+		displayOptions: {
+			show: {
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
+			},
+		},
+	},
+	{
 		displayName: 'Proxy Type',
 		name: 'proxyType',
 		type: 'options',
@@ -101,6 +158,58 @@ export const publicFields: INodeProperties[] = [
 					'httpRequestAutoRetry',
 					'httpRequestAutoRetryBrowser',
 				],
+				whichProxyToUse: ['proxyFromScrappey'],
+			},
+		},
+	},
+	{
+		displayName: 'Custom proxy country',
+		name: 'customProxyCountryBoolean',
+		type: 'boolean',
+		default: false,
+		hint: 'Use a custom proxy country',
+		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
+				whichProxyToUse: ['proxyFromScrappey'],
+			},
+		},
+	},
+	{
+		displayName: 'Custom Proxy Country',
+		name: 'customProxyCountry',
+		type: 'options',
+		options: Static_Country_Proxies,
+		default: '',
+		hint: 'Specify a country for the proxy to use with this request',
+		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: [
+					'requestBuilder',
+					'httpRequestAutoRetry',
+					'httpRequestAutoRetryBrowser',
+				],
+				customProxyCountryBoolean: [true],
+			},
+		},
+	},
+	{
+		displayName: 'Custom Proxy',
+		name: 'custom_proxy',
+		type: 'boolean',
+		default: false,
+		hint: 'When enabled, the proxy defined in credentials will be used for this request.',
+		required: false,
+		displayOptions: {
+			show: {
+				scrappeyOperations: ['requestBuilder'],
+				proxyType: [''],
 				whichProxyToUse: ['proxyFromScrappey'],
 			},
 		},
@@ -344,75 +453,6 @@ export const publicFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Custom proxy country',
-		name: 'customProxyCountryBoolean',
-		type: 'boolean',
-		default: false,
-		hint: 'Use a custom proxy country',
-		required: false,
-		displayOptions: {
-			show: {
-				scrappeyOperations: [
-					'requestBuilder',
-					'httpRequestAutoRetry',
-					'httpRequestAutoRetryBrowser',
-				],
-				whichProxyToUse: ['proxyFromScrappey'],
-			},
-		},
-	},
-	{
-		displayName: 'Custom Proxy Country',
-		name: 'customProxyCountry',
-		type: 'options',
-		options: Static_Country_Proxies,
-		default: '',
-		hint: 'Specify a country for the proxy to use with this request',
-		required: false,
-		displayOptions: {
-			show: {
-				scrappeyOperations: [
-					'requestBuilder',
-					'httpRequestAutoRetry',
-					'httpRequestAutoRetryBrowser',
-				],
-				customProxyCountryBoolean: [true],
-			},
-		},
-	},
-	{
-		displayName: 'Which Proxy To Use',
-		name: 'whichProxyToUse',
-		type: 'options',
-		options: [
-			{
-				name: 'Proxy From Credentials',
-				value: 'proxyFromCredentials',
-				description: 'Use the proxy defined in credentials for this request',
-			},
-			{
-				name: 'Proxy From HTTP Request Node',
-				value: 'proxyFromNode',
-				description: 'Use the proxy defined in HTTP Request Node for this request',
-			},
-			{
-				name: 'Proxy From Scrappey',
-				value: 'proxyFromScrappey',
-				description: 'Use the proxy defined in Scrappey for this request',
-			},
-		],
-		default: 'proxyFromCredentials',
-		displayOptions: {
-			show: {
-				scrappeyOperations: [
-					'requestBuilder',
-					'httpRequestAutoRetry',
-					'httpRequestAutoRetryBrowser',
-				],
-			},
-		},
-	},
-	{
 		displayName: 'Datadome',
 		name: 'datadome',
 		type: 'boolean',
@@ -422,46 +462,6 @@ export const publicFields: INodeProperties[] = [
 			show: {
 				scrappeyOperations: ['requestBuilder'],
 				request_type: ['Browser'],
-			},
-		},
-	},
-	{
-		displayName: 'Custom Proxy',
-		name: 'custom_proxy',
-		type: 'boolean',
-		default: false,
-		hint: 'When enabled, the proxy defined in credentials will be used for this request.',
-		required: false,
-		displayOptions: {
-			show: {
-				scrappeyOperations: ['requestBuilder'],
-				proxyType: [''],
-				whichProxyToUse: ['proxyFromScrappey'],
-			},
-		},
-	},
-	{
-		displayName: 'Request Type',
-		name: 'request_type',
-		type: 'options',
-		default: 'Request',
-		options: [
-			{
-				name: 'Browser',
-				value: 'Browser',
-			},
-			{
-				name: 'Request',
-				value: 'Request',
-			},
-			{
-				name: 'Patched Chrome Browser',
-				value: 'PatchedChrome',
-			},
-		],
-		displayOptions: {
-			show: {
-				scrappeyOperations: ['requestBuilder'],
 			},
 		},
 	},
