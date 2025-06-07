@@ -1,10 +1,105 @@
-import { evaluateExpression, isExpression } from './utils';
+import { evaluateExpression } from './utils';
 import { IExecuteFunctions } from 'n8n-workflow';
 type BodyEntry = Record<
 	string,
 	string | number | boolean | Object | BodyEntry[] | Record<string, string>
 >;
 let body: BodyEntry = {};
+
+// Function to process URLs with multiple expressions like {{ $json.key }}
+const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: number = 0): string => {
+	// If the URL isn't a string, return it as is
+	if (typeof url !== 'string') return String(url);
+
+	let processedUrl = url;
+	console.log(`Processing URL: ${url}`);
+
+	// If the URL starts with '=', we need special handling
+	if (processedUrl.trim().startsWith('=')) {
+		console.log('URL starts with =, special handling required');
+
+		// Check if it contains {{ $json.key }} patterns
+		if (processedUrl.includes('{{') && processedUrl.includes('$json.')) {
+			console.log('URL contains {{ $json.key }} patterns, processing manually');
+
+			// Remove the leading '=' to process manually
+			processedUrl = processedUrl.trim().substring(1);
+
+			// Replace {{ $json.key }} patterns first
+			processedUrl = processedUrl.replace(/{{\s*\$json\.([a-zA-Z0-9_]+)\s*}}/g, (match, key) => {
+				console.log(`Found key: ${key}, trying to replace`);
+				try {
+					// Try to get the value from the current execution context
+					const paramName = `$json["${key}"]`;
+					try {
+						const value = eFn.evaluateExpression(`={{ ${paramName} }}`, itemIndex);
+						console.log(`Evaluated value for ${key}: ${value}`);
+						return value !== undefined && value !== null ? String(value) : '';
+					} catch (e) {
+						console.log(`First method failed: ${e.message}, trying alternate method`);
+						try {
+							const value = eFn.getNodeParameter(paramName, itemIndex, '');
+							console.log(`Alternate method value for ${key}: ${value}`);
+							return value !== undefined && value !== null ? String(value) : '';
+						} catch (e2) {
+							console.log(`Both methods failed: ${e2.message}`);
+							return '';
+						}
+					}
+				} catch (error) {
+					console.log(`Error processing key ${key}: ${error.message}`);
+					return '';
+				}
+			});
+
+			console.log(`Final processed URL: ${processedUrl}`);
+			// Now return the processed URL
+			return processedUrl;
+		} else {
+			console.log('URL is a standard n8n expression, using evaluateExpression');
+			// Standard n8n expression without {{ $json.key }} patterns
+			try {
+				// Use the existing evaluateExpression function which handles '=' prefix
+				const evaluatedUrl = evaluateExpression(eFn, url, itemIndex);
+				console.log(`Evaluated URL: ${evaluatedUrl}`);
+				// Convert to string if the result is not a string
+				return typeof evaluatedUrl === 'string' ? evaluatedUrl : String(evaluatedUrl);
+			} catch (error) {
+				// If evaluation fails, continue with the original URL without the '='
+				console.warn(`Failed to evaluate URL expression: ${url}`, error);
+				return url.trim().substring(1);
+			}
+		}
+	}
+
+	console.log('URL does not start with =, processing only {{ $json.key }} patterns');
+	// For URLs without '=' prefix, just handle {{ $json.key }} patterns
+	return processedUrl.replace(/{{\s*\$json\.([a-zA-Z0-9_]+)\s*}}/g, (match, key) => {
+		console.log(`Found key without = prefix: ${key}, trying to replace`);
+		try {
+			// Try to get the value from the current execution context
+			const paramName = `$json["${key}"]`;
+			try {
+				const value = eFn.evaluateExpression(`={{ ${paramName} }}`, itemIndex);
+				console.log(`Evaluated value for ${key}: ${value}`);
+				return value !== undefined && value !== null ? String(value) : '';
+			} catch (e) {
+				console.log(`First method failed: ${e.message}, trying alternate method`);
+				try {
+					const value = eFn.getNodeParameter(paramName, itemIndex, '');
+					console.log(`Alternate method value for ${key}: ${value}`);
+					return value !== undefined && value !== null ? String(value) : '';
+				} catch (e2) {
+					console.log(`Both methods failed: ${e2.message}`);
+					return '';
+				}
+			}
+		} catch (error) {
+			console.log(`Error processing key ${key}: ${error.message}`);
+			return '';
+		}
+	});
+};
 
 const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {
 	switch (choice) {
@@ -67,7 +162,7 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const request_type = eFn.getNodeParameter('request_type', 0, 'Request') as string;
 	body = Request_Type_Choice(request_type, eFn);
 
-	const url = eFn.getNodeParameter('url', 0, '') as string;
+	let url = eFn.getNodeParameter('url', 0, '') as string;
 	const httpMethod = eFn.getNodeParameter('httpMethod', 0, '') as string;
 	const proxyType = eFn.getNodeParameter('proxyType', 0, '') as string;
 	const bodyOrParams = eFn.getNodeParameter('bodyOrParams', 0, '') as string;
@@ -88,7 +183,19 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	const allowProxy = eFn.getNodeParameter('allowProxy', 0, false) as boolean;
 	const attempts = eFn.getNodeParameter('attempts', 0, 3) as number;
 
-	if (url && url.trim() !== '') body.url = url;
+	// Process URL with expressions
+	if (url && url.trim() !== '') {
+		// Process URL expressions - starts with '=' or contains {{ $json.key }}
+		url = processUrlExpressions(url, eFn, 0);
+
+		// Clean up URL if needed
+		if (url.endsWith('/')) {
+			url = url.slice(0, -1);
+		}
+
+		body.url = url;
+	}
+
 	if (httpMethod && httpMethod.trim() !== '') body.cmd = httpMethod;
 
 	if (proxyType && proxyType.trim() !== '') body[proxyType] = true;
@@ -182,9 +289,11 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 	const cmd = `request.${processedMethod}`;
 	let urlRaw = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
 
-	urlRaw = evaluateExpression(eFn, urlRaw, 0) as string;
+	// Process URL expressions - handles both direct expressions and {{ $json.key }} patterns
+	urlRaw = processUrlExpressions(urlRaw, eFn, 0);
 
-	if (typeof urlRaw === 'string' && !isExpression(urlRaw) && urlRaw.endsWith('/')) {
+	// Clean up the URL if needed
+	if (typeof urlRaw === 'string' && urlRaw.endsWith('/')) {
 		urlRaw = urlRaw.slice(0, -1);
 	}
 

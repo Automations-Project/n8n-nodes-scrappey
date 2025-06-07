@@ -1,6 +1,6 @@
 {
-	"name": "@nskha/n8n-nodes-scrappey",
-	"version": "0.1.0",
+	"name": "@automations-project/n8n-nodes-scrappey",
+	"version": "0.1.1",
 	"description": "n8n node package for Scrappey API integration",
 	"keywords": [
 		"n8n-community-node-package"
