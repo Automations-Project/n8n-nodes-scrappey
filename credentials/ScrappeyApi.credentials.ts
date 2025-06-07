@@ -8,7 +8,7 @@ export class ScrappeyApi implements ICredentialType {
 	properties: INodeProperties[] = [
 		{
 			displayName:
-				'✨ Feel free to support us by using our Scrappey <a href="https://scrappey.com/?ref=karek" target="_blank">Affiliate Link</a> ✨ Thanks for your support! 💖',
+'Get 750 Direct (bot-bypass) & 150 GUI Browser requests free—sign up now 👉 <a href="https://nodes.n8n.community/scrappey/signup" target="_blank">Start scraping</a>',
 			name: 'affiliateMessage',
 			type: 'notice',
 			default: '',

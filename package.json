@@ -1,5 +1,5 @@
 {
-	"name": "@automations-project/n8n-nodes-scrappey",
+	"name": "@nskha/n8n-nodes-scrappey",
 	"version": "0.1.0",
 	"description": "n8n node package for Scrappey API integration",
 	"keywords": [
@@ -21,9 +21,6 @@
 	},
 	"packageManager": "pnpm@9.1.4",
 	"main": "index.js",
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
-	},
 	"scripts": {
 		"build": "tsc && gulp build:icons",
 		"deploy": "node scripts/update-node-json.js && node scripts/deploy.js",
