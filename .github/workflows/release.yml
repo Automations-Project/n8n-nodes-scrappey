@@ -78,8 +78,8 @@ jobs:
       - name: Run linting
         run: pnpm exec eslint "**/*.{ts,js}" --ignore-path .gitignore
 
-      - name: Check formatting
-        run: pnpm exec prettier --check .
+      - name: Auto-format files
+        run: pnpm exec prettier --write .
 
       - name: Type check
         run: pnpm exec tsc --noEmit

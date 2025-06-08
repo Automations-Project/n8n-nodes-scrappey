@@ -112,36 +112,46 @@ jobs:
           if [ -z "$PREV_TAG" ]; then
             CHANGELOG="🎉 Initial release"
           else
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD~1 --pretty=format:"- %s" --no-merges)
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD~1 --pretty=format:"* %s" --no-merges | head -10)
             if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="- Minor improvements and bug fixes"
+              CHANGELOG="* Minor improvements and bug fixes"
             fi
           fi
 
-          echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
+          # Use EOF delimiter to handle multi-line output safely
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         if: steps.check_changes.outputs.has_changes == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v7
         with:
-          tag_name: v${{ steps.new_version.outputs.version }}
-          release_name: v${{ steps.new_version.outputs.version }}
-          body: |
-            ## 🚀 Release v${{ steps.new_version.outputs.version }}
+          script: |
+            const changelog = `${{ steps.changelog.outputs.changelog }}`;
+            const version = '${{ steps.new_version.outputs.version }}';
+
+            const releaseBody = `## 🚀 Release v${version}
 
             ### Changes
-            ${{ steps.changelog.outputs.changelog }}
+            ${changelog}
 
             ### Installation
-            ```bash
-            npm install @automations-project/n8n-nodes-scrappey@${{ steps.new_version.outputs.version }}
-            ```
+            \`\`\`bash
+            npm install @nskha/n8n-nodes-scrappey@${version}
+            \`\`\`
 
-            Or in n8n: Settings → Community Nodes → `@automations-project/n8n-nodes-scrappey`
-          draft: false
-          prerelease: false
+            Or in n8n: Settings → Community Nodes → \`@nskha/n8n-nodes-scrappey\``;
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+              name: `v${version}`,
+              body: releaseBody,
+              draft: false,
+              prerelease: false
+            });
 
       - name: Output summary
         if: steps.check_changes.outputs.has_changes == 'true'
