@@ -5,12 +5,14 @@ Thank you for your interest in contributing to the Scrappey n8n Node! This docum
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18.10 or higher
 - pnpm 9.1+ (required package manager)
 - Git
 - n8n instance for testing (optional but recommended)
 
 ### Development Setup
+
 ```bash
 # 1. Fork and clone the repository
 git clone https://github.com/YOUR-USERNAME/n8n-nodes-scrappey.git
@@ -29,13 +31,16 @@ pnpm run start:dev
 ## 📝 Development Guidelines
 
 ### Code Style
+
 - **TypeScript**: All new code must be written in TypeScript
 - **ESLint**: Follow the existing ESLint configuration
 - **Prettier**: Use Prettier for code formatting
 - **Naming**: Use descriptive variable and function names
 
 ### Code Quality Checklist
+
 Before submitting any code, ensure it passes:
+
 ```bash
 # Linting
 pnpm run lint
@@ -54,6 +59,7 @@ pnpm run validate
 ```
 
 ### File Structure
+
 ```
 nodes/Scrappey/
 ├── Scrappey.node.ts         # Main node definition
@@ -69,6 +75,7 @@ nodes/Scrappey/
 ## 🔄 CI/CD Workflow
 
 ### Automated Processes
+
 Our CI/CD pipeline automatically handles:
 
 1. **Code Quality**: Linting, formatting, and type checking
@@ -78,6 +85,7 @@ Our CI/CD pipeline automatically handles:
 5. **Releases**: Publishing to GitHub Packages and npm
 
 ### Commit Message Conventions
+
 We use conventional commits for automatic versioning:
 
 - `feat: description` → **Minor version bump** (new features)
@@ -88,10 +96,12 @@ We use conventional commits for automatic versioning:
 - `[major]: description` → **Major version bump** (explicit major)
 
 ### Special Commit Flags
+
 - `[skip ci]` → Skip CI/CD pipeline
 - `[skip version]` → Skip automatic version bump
 
 ### Example Commits
+
 ```bash
 # New feature (minor version bump)
 git commit -m "feat: add support for custom user agents"
@@ -114,6 +124,7 @@ git commit -m "chore: update dev dependencies [skip ci]"
 ## 🧪 Testing
 
 ### Manual Testing
+
 1. Build the node: `pnpm run build`
 2. Install in local n8n: `pnpm run start:dev`
 3. Test all three operation modes:
@@ -122,6 +133,7 @@ git commit -m "chore: update dev dependencies [skip ci]"
    - Browser Auto-Retry
 
 ### Test Cases to Verify
+
 - [ ] Basic HTTP requests work
 - [ ] Browser requests with anti-bot protection
 - [ ] Proxy configuration (credentials, Scrappey, custom)
@@ -134,12 +146,14 @@ git commit -m "chore: update dev dependencies [skip ci]"
 ## 📦 Release Process
 
 ### Automatic Releases (Recommended)
+
 1. Merge approved PRs to `main` branch
 2. Auto-versioning workflow triggers automatically
 3. Version bump commits are created
 4. Release workflow publishes to registries
 
 ### Manual Releases
+
 1. Update version in `package.json`
 2. Run `node scripts/update-node-json.js`
 3. Create and push a version tag: `git tag v1.0.0 && git push origin v1.0.0`
@@ -148,7 +162,9 @@ git commit -m "chore: update dev dependencies [skip ci]"
 ## 🐛 Issue Reporting
 
 ### Bug Reports
+
 Please include:
+
 - n8n version
 - Node version
 - Scrappey node version
@@ -158,7 +174,9 @@ Please include:
 - Workflow configuration (if applicable)
 
 ### Feature Requests
+
 Please include:
+
 - Use case description
 - Proposed solution
 - Alternatives considered
@@ -179,6 +197,7 @@ Please include:
    - Test results
 
 ### PR Review Checklist
+
 - [ ] Code follows style guidelines
 - [ ] All CI checks pass
 - [ ] Functionality tested manually
@@ -189,6 +208,7 @@ Please include:
 ## 🏷️ Labeling System
 
 ### Issue Labels
+
 - `bug` - Something isn't working
 - `enhancement` - New feature or request
 - `documentation` - Documentation improvements
@@ -197,6 +217,7 @@ Please include:
 - `question` - Further information is requested
 
 ### PR Labels
+
 - `automated` - Created by automation
 - `dependencies` - Dependency updates
 - `ci/cd` - CI/CD related changes
@@ -204,18 +225,21 @@ Please include:
 ## 🤝 Community
 
 ### Getting Help
+
 - **GitHub Issues**: [Report bugs or ask questions](https://github.com/Automations-Project/n8n-nodes-scrappey/issues)
 - **n8n Community**: [Join the discussion](https://community.n8n.io)
 - **Scrappey Support**: [API documentation](https://wiki.scrappey.com)
 
 ### Code of Conduct
+
 This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). Please read and follow it in all interactions.
 
 ## 🙏 Recognition
 
 Contributors are recognized in:
+
 - Release notes
 - GitHub contributor graphs
 - Community highlights
 
-Thank you for making this project better! 🎉 
+Thank you for making this project better! 🎉

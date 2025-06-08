@@ -4,21 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.0)'
-        required: true
-        type: string
-      release_type:
-        description: 'Type of release'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 env:
   NODE_VERSION: '18.x'
@@ -37,14 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version from tag or input
+      - name: Get version from tag
         id: get_version
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          else
-            VERSION="${{ github.event.inputs.version }}"
-          fi
+          VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: ${VERSION}"
 
@@ -59,11 +40,7 @@ jobs:
       - name: Check if should release
         id: should_release
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "result=true" >> $GITHUB_OUTPUT
-          else
-            echo "result=true" >> $GITHUB_OUTPUT
-          fi
+          echo "result=true" >> $GITHUB_OUTPUT
 
   build-and-test:
     name: Build and Test for Release
@@ -100,14 +77,15 @@ jobs:
       - name: Build project
         run: pnpm run build
 
-      - name: Update version in package.json
-        if: github.event_name == 'workflow_dispatch'
+      - name: Verify version consistency
         run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
-          pnpm version --no-git-tag-version "${NEW_VERSION}"
-
-      - name: Update node version
-        run: node scripts/update-node-json.js
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ needs.validate-release.outputs.version }}"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: package.json version ($PACKAGE_VERSION) doesn't match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "✅ Version consistency verified: $PACKAGE_VERSION"
 
       - name: Pack package
         run: pnpm pack
@@ -149,12 +127,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Update version in package.json
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
-          pnpm version --no-git-tag-version "${NEW_VERSION}"
-
       - name: Build project
         run: pnpm run build
 
@@ -194,12 +166,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Update version in package.json
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
-          pnpm version --no-git-tag-version "${NEW_VERSION}"
-
       - name: Build project
         run: pnpm run build
 
@@ -208,106 +174,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  create-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: [validate-release, build-and-test, publish-github]
-    if: needs.validate-release.outputs.should_release == 'true'
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-package
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          VERSION="v${{ needs.validate-release.outputs.version }}"
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-
-          if [ -z "$PREV_TAG" ]; then
-            CHANGELOG="🎉 Initial release of Scrappey n8n Node v${{ needs.validate-release.outputs.version }}"
-          else
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" --no-merges)
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="- Bug fixes and improvements"
-            fi
-          fi
-
-          {
-            echo "changelog<<EOF"
-            echo "## What's Changed"
-            echo ""
-            echo "$CHANGELOG"
-            echo ""
-            echo "## Installation"
-            echo ""
-            echo "### From GitHub Packages:"
-            echo '```bash'
-            echo "npm install @automations-project/n8n-nodes-scrappey@${{ needs.validate-release.outputs.version }}"
-            echo '```'
-            echo ""
-            echo "### In n8n:"
-            echo "1. Go to Settings → Community Nodes"
-            echo "2. Enter: \`@automations-project/n8n-nodes-scrappey\`"
-            echo "3. Click Install"
-            echo ""
-            echo "## Features"
-            echo "- 🛠️ **Request Builder**: Create customized HTTP/browser requests"
-            echo "- 🔁 **Auto-Retry HTTP**: Automatically retry failed HTTP requests"
-            echo "- 🌐 **Auto-Retry Browser**: Browser-based retry with anti-bot protection"
-            echo "- 🔒 **Anti-Bot Bypass**: Handle Cloudflare, Datadome, hCaptcha, reCAPTCHA"
-            echo "- 🌍 **Proxy Support**: Residential, datacenter, and mobile proxies"
-            echo "- 🎯 **Country Targeting**: Geo-targeted proxy selection"
-            echo ""
-            echo "**Full Changelog**: https://github.com/Automations-Project/n8n-nodes-scrappey/compare/${PREV_TAG}...${VERSION}"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ needs.validate-release.outputs.version }}
-          release_name: v${{ needs.validate-release.outputs.version }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./automations-project-n8n-nodes-scrappey-${{ needs.validate-release.outputs.version }}.tgz
-          asset_name: n8n-nodes-scrappey-${{ needs.validate-release.outputs.version }}.tgz
-          asset_content_type: application/gzip
-
   notify:
     name: Notify Success
     runs-on: ubuntu-latest
-    needs: [validate-release, create-release]
+    needs: [validate-release, publish-github]
     if: always() && needs.validate-release.outputs.should_release == 'true'
     steps:
       - name: Success notification
-        if: needs.create-release.result == 'success'
+        if: needs.publish-github.result == 'success'
         run: |
-          echo "🎉 Successfully released v${{ needs.validate-release.outputs.version }}"
+          echo "🎉 Successfully published v${{ needs.validate-release.outputs.version }}"
           echo "📦 Package published to GitHub Packages"
-          echo "🏷️ GitHub release created"
+          echo "🏷️ GitHub release created by auto-version workflow"
 
       - name: Failure notification
-        if: needs.create-release.result == 'failure'
+        if: needs.publish-github.result == 'failure'
         run: |
-          echo "❌ Release failed for v${{ needs.validate-release.outputs.version }}"
+          echo "❌ Publishing failed for v${{ needs.validate-release.outputs.version }}"
           exit 1

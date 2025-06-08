@@ -1,41 +1,41 @@
 version: 2
 updates:
   # Enable version updates for npm
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     reviewers:
-      - "Nskha"
+      - 'Nskha'
     assignees:
-      - "Nskha"
+      - 'Nskha'
     labels:
-      - "dependencies"
-      - "automated"
+      - 'dependencies'
+      - 'automated'
     ignore:
       # Ignore major version updates for n8n (requires manual testing)
-      - dependency-name: "n8n"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: 'n8n'
+        update-types: ['version-update:semver-major']
       # Ignore patch updates for TypeScript (can be noisy)
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-patch"]
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-patch']
 
   # Enable version updates for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: 'ci'
+      include: 'scope'
     labels:
-      - "ci/cd"
-      - "automated" 
+      - 'ci/cd'
+      - 'automated'

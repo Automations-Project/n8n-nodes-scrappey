@@ -6,7 +6,11 @@ type BodyEntry = Record<
 let body: BodyEntry = {};
 
 // Function to process URLs with multiple expressions like {{ $json.key }} or {{ $node["NodeName"].json["key"] }}
-const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: number = 0): string => {
+const processUrlExpressions = (
+	url: string,
+	eFn: IExecuteFunctions,
+	itemIndex: number = 0,
+): string => {
 	// If the URL isn't a string, return it as is
 	if (typeof url !== 'string') return String(url);
 
@@ -54,11 +58,17 @@ const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: n
 						console.log(`Removed leading equals sign, new value: ${stringValue}`);
 					}
 
-					processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
+					processedUrl = processedUrl.replace(
+						new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
+						stringValue,
+					);
 				} catch (error) {
 					console.log(`Error evaluating expression ${expr}: ${error.message}`);
 					// If evaluation fails, replace with empty string
-					processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), '');
+					processedUrl = processedUrl.replace(
+						new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
+						'',
+					);
 				}
 			}
 			console.log(`Final processed URL: ${processedUrl}`);
@@ -104,11 +114,17 @@ const processUrlExpressions = (url: string, eFn: IExecuteFunctions, itemIndex: n
 					console.log(`Removed leading equals sign, new value: ${stringValue}`);
 				}
 
-				processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), stringValue);
+				processedUrl = processedUrl.replace(
+					new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
+					stringValue,
+				);
 			} catch (error) {
 				console.log(`Error evaluating expression ${expr}: ${error.message}`);
 				// If evaluation fails, replace with empty string
-				processedUrl = processedUrl.replace(new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'), '');
+				processedUrl = processedUrl.replace(
+					new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
+					'',
+				);
 			}
 		}
 	}

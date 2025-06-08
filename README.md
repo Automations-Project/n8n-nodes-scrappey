@@ -14,18 +14,21 @@ A powerful n8n community node that integrates with the [Scrappey.com API](https:
 ## ✨ Key Features
 
 ### 🛠️ **Three Operation Modes**
+
 1. **Request Builder** - Create fully customized HTTP/browser requests with granular control
 2. **HTTP Auto-Retry** - Automatically retry failed HTTP requests through Scrappey's anti-bot network
 3. **Browser Auto-Retry** - Advanced browser-based retry with full anti-bot protection
 
 ### 🔒 **Anti-Bot Protection Bypass**
+
 - **Cloudflare** challenge solving
-- **Datadome** bypass capabilities  
+- **Datadome** bypass capabilities
 - **hCaptcha & reCAPTCHA** automatic solving
 - **JavaScript-heavy websites** full browser simulation
 - **Mouse movement simulation** for enhanced stealth
 
 ### 🌍 **Advanced Proxy Management**
+
 - **Residential proxies** with country targeting
 - **Datacenter proxies** for fast requests
 - **Mobile proxies** for mobile-specific content
@@ -33,6 +36,7 @@ A powerful n8n community node that integrates with the [Scrappey.com API](https:
 - **150+ countries** available for geo-targeting
 
 ### ⚙️ **Flexible Configuration**
+
 - **Multiple request types**: Standard HTTP, Browser, Patched Chrome
 - **Custom headers & cookies** with field-based or JSON input
 - **Session management** for maintaining state across requests
@@ -43,12 +47,14 @@ A powerful n8n community node that integrates with the [Scrappey.com API](https:
 ## 🚀 Installation
 
 ### Method 1: n8n Community Nodes (Recommended)
+
 1. Open your n8n instance
 2. Go to **Settings** → **Community Nodes**
 3. Enter: `@automations-project/n8n-nodes-scrappey`
 4. Click **Install**
 
 ### Method 2: Manual Installation
+
 ```bash
 # Using npm
 npm install @automations-project/n8n-nodes-scrappey
@@ -61,6 +67,7 @@ yarn add @automations-project/n8n-nodes-scrappey
 ```
 
 ### Method 3: Development Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Automations-Project/n8n-nodes-scrappey.git
@@ -79,14 +86,17 @@ pnpm run start:dev
 ## 🔧 Configuration
 
 ### 1. Set Up Scrappey API Credentials
+
 1. Sign up at [Scrappey.com](/#) to get your API key.
 2. In n8n, create new **Scrappey API** credentials
 3. Enter your API key and optional proxy settings
-> 🎯 **Get Started Free!** Try Scrappey with **750 Direct requests** and **150 Browser requests** at no cost.  
-> [Start your free trial →](https://nodes.n8n.community/scrappey/signup)  
-> 
-> **Affordable scaling**: For just €100, you can get 600,000 request credits including proxies, captcha etc...
+   > 🎯 **Get Started Free!** Try Scrappey with **750 Direct requests** and **150 Browser requests** at no cost.  
+   > [Start your free trial →](https://nodes.n8n.community/scrappey/signup)
+   >
+   > **Affordable scaling**: For just €100, you can get 600,000 request credits including proxies, captcha etc...
+
 ### 2. Credential Options
+
 - **API Key** (required): Your Scrappey.com API key
 - **Custom Proxy** (optional): Your own proxy URL (SOCKS4/5, HTTP/HTTPS)
 - **Whitelisted Domains** (optional): JSON array of allowed domains for enhanced security
@@ -94,6 +104,7 @@ pnpm run start:dev
 ## 📋 Operation Modes
 
 ### 🛠️ Request Builder
+
 **Primary mode for creating custom requests with full control**
 
 ```typescript
@@ -112,24 +123,29 @@ pnpm run start:dev
 ```
 
 **Use Cases:**
+
 - Complex form submissions with CAPTCHA solving
 - JavaScript-heavy SPA scraping
 - API data extraction with anti-bot protection
 - Multi-step workflows with session management
 
 ### 🔁 HTTP Auto-Retry
+
 **Fallback solution for failed n8n HTTP Request nodes**
 
 Connect the **error output** (red connector) of a standard HTTP Request node to this operation. It automatically retries the same request through Scrappey's network when blocked by:
+
 - Cloudflare challenges
 - Rate limiting
 - IP blocks
 - Basic anti-bot measures
 
 ### 🌐 Browser Auto-Retry
+
 **Advanced browser-based retry with full anti-bot protection**
 
 Similar to HTTP Auto-Retry but uses a full browser environment with:
+
 - Automatic CAPTCHA solving (hCaptcha, reCAPTCHA)
 - Mouse movement simulation
 - Datadome bypass enabled
@@ -139,6 +155,7 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 ## 💡 Usage Examples
 
 ### Basic Web Scraping
+
 ```javascript
 // Request Builder - Simple GET request
 {
@@ -150,6 +167,7 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 ```
 
 ### Advanced Browser Automation
+
 ```javascript
 // Browser request with anti-bot protection
 {
@@ -166,6 +184,7 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 ```
 
 ### Form Submission with CAPTCHA
+
 ```javascript
 // POST request with CAPTCHA solving
 {
@@ -180,6 +199,7 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 ```
 
 ### Auto-Retry Fallback
+
 ```javascript
 // Connect HTTP Request node error output to Scrappey node input
 // Set operation to "httpRequestAutoRetry" or "httpRequestAutoRetryBrowser"
@@ -194,17 +214,18 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 
 The node provides detailed error messages for common Scrappey API error codes:
 
-| Code | Description | Solution |
-|------|-------------|----------|
-| CODE-0001 | Server overloaded | Retry after a few minutes |
+| Code      | Description        | Solution                            |
+| --------- | ------------------ | ----------------------------------- |
+| CODE-0001 | Server overloaded  | Retry after a few minutes           |
 | CODE-0002 | Cloudflare blocked | Try different proxy or browser mode |
-| CODE-0003 | Too many attempts | Wait before retrying |
-| CODE-0004 | Invalid command | Check request configuration |
-| CODE-0005 | Tunnel failed | Retry with different proxy |
+| CODE-0003 | Too many attempts  | Wait before retrying                |
+| CODE-0004 | Invalid command    | Check request configuration         |
+| CODE-0005 | Tunnel failed      | Retry with different proxy          |
 
 ## 🏗️ Development
 
 ### Building from Source
+
 ```bash
 # Install dependencies
 pnpm install
@@ -227,6 +248,7 @@ pnpm run validate
 ```
 
 ### Project Structure
+
 ```
 n8n-nodes-scrappey/
 ├── nodes/Scrappey/          # Main node implementation
@@ -255,8 +277,9 @@ This project includes a comprehensive CI/CD setup:
 - **Dependabot**: Automated dependency updates
 
 #### Commit Message Conventions
+
 - `feat: description` → Minor version bump
-- `fix: description` → Patch version bump  
+- `fix: description` → Patch version bump
 - `BREAKING CHANGE` or `[major]` → Major version bump
 - `[skip ci]` or `[skip version]` → Skip automation
 
@@ -279,6 +302,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 - **n8n Community**: [https://community.n8n.io](https://community.n8n.io)
 - **GitHub Issues**: [Report bugs or request features](https://github.com/Automations-Project/n8n-nodes-scrappey/issues)
 - **Nskha Discord**: [⚠️Incative community](https://nskha.com/discord)
+
 ---
 
 **Made with ❤️ for the n8n community**

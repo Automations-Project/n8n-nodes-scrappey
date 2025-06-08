@@ -8,7 +8,7 @@ export class ScrappeyApi implements ICredentialType {
 	properties: INodeProperties[] = [
 		{
 			displayName:
-'Get 750 Direct (bot-bypass) & 150 GUI Browser requests free—sign up now 👉 <a href="https://nodes.n8n.community/scrappey/signup" target="_blank">Start scraping</a>',
+				'Get 750 Direct (bot-bypass) & 150 GUI Browser requests free—sign up now 👉 <a href="https://nodes.n8n.community/scrappey/signup" target="_blank">Start scraping</a>',
 			name: 'affiliateMessage',
 			type: 'notice',
 			default: '',
@@ -29,9 +29,6 @@ export class ScrappeyApi implements ICredentialType {
 			name: 'allowProxy',
 			type: 'boolean',
 			default: false,
-
-
-
 		},
 		{
 			displayName: 'Proxy URL Socks-5 Socks-4 Http Https',
