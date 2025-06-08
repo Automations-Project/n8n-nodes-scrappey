@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - master
     paths-ignore:
       - 'README.md'
       - 'docs/**'
@@ -45,7 +46,7 @@ jobs:
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           echo "Commit message: $COMMIT_MSG"
-          
+
           if [[ $COMMIT_MSG =~ \[major\] ]] || [[ $COMMIT_MSG =~ BREAKING[[:space:]]CHANGE ]]; then
             echo "type=major" >> $GITHUB_OUTPUT
             echo "📈 Major version bump detected"
@@ -98,7 +99,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           git tag "v${{ steps.new_version.outputs.version }}"
-          git push origin main
+          git push origin HEAD
           git push origin "v${{ steps.new_version.outputs.version }}"
 
       - name: Create changelog
@@ -107,7 +108,7 @@ jobs:
         run: |
           NEW_VERSION="v${{ steps.new_version.outputs.version }}"
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-          
+
           if [ -z "$PREV_TAG" ]; then
             CHANGELOG="🎉 Initial release"
           else
@@ -116,7 +117,7 @@ jobs:
               CHANGELOG="- Minor improvements and bug fixes"
             fi
           fi
-          
+
           echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
 
       - name: Trigger release workflow
@@ -128,7 +129,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'release.yml',
-              ref: 'main',
+              ref: '${{ github.ref_name }}',
               inputs: {
                 version: '${{ steps.new_version.outputs.version }}',
                 release_type: '${{ steps.version_type.outputs.type }}'
@@ -156,4 +157,4 @@ jobs:
           echo "## ℹ️ No Version Bump Required" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "No changes detected that require a version bump." >> $GITHUB_STEP_SUMMARY
-          echo "Current version remains: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY 
+          echo "Current version remains: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
 
 jobs:
   lint-and-format:
@@ -150,4 +150,4 @@ jobs:
           cd test-install
           npm init -y
           npm install ../automations-project-n8n-nodes-scrappey-*.tgz
-          node -e "console.log(require('@automations-project/n8n-nodes-scrappey/package.json').version)" 
+          node -e "console.log(require('@automations-project/n8n-nodes-scrappey/package.json').version)"
