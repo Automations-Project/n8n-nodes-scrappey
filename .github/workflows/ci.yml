@@ -153,5 +153,5 @@ jobs:
           mkdir test-install
           cd test-install
           npm init -y
-          npm install ../automations-project-n8n-nodes-scrappey-*.tgz
-          node -e "console.log(require('@automations-project/n8n-nodes-scrappey/package.json').version)"
+          npm install ../nskha-n8n-nodes-scrappey-*.tgz
+          node -e "console.log(require('@nskha/n8n-nodes-scrappey/package.json').version)"
