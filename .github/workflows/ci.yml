@@ -10,6 +10,8 @@ jobs:
   lint-and-format:
     name: Lint & Format Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,8 +33,28 @@ jobs:
       - name: Run ESLint
         run: pnpm exec eslint "**/*.{ts,js}" --ignore-path .gitignore
 
-      - name: Check Prettier formatting
-        run: pnpm exec prettier --check .
+      - name: Auto-format files
+        run: pnpm exec prettier --write .
+
+      - name: Check if formatting changed files
+        id: format_check
+        run: |
+          if [[ -n $(git diff --name-only) ]]; then
+            echo "formatted_files=true" >> $GITHUB_OUTPUT
+            echo "Files were auto-formatted:"
+            git diff --name-only
+          else
+            echo "formatted_files=false" >> $GITHUB_OUTPUT
+            echo "✅ All files already properly formatted"
+          fi
+
+      - name: Commit auto-formatted files
+        if: steps.format_check.outputs.formatted_files == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "style: auto-format files with prettier [skip ci]" || exit 0
 
       - name: TypeScript type check
         run: pnpm exec tsc --noEmit
