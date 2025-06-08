@@ -132,7 +132,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@nskha'
+          scope: '@automations-project'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -142,15 +142,29 @@ jobs:
 
       - name: Configure npm for GitHub Packages
         run: |
-          echo "@nskha:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "@automations-project:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update package name for GitHub Packages
+        run: |
+          # Create a backup of original package.json
+          cp package.json package.json.backup
+          # Update package name for GitHub Packages
+          node -e "
+            const pkg = require('./package.json');
+            pkg.name = '@automations-project/n8n-nodes-scrappey';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
 
       - name: Publish to GitHub Packages
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore original package name
+        run: mv package.json.backup package.json
 
   publish-npm:
     name: Publish to NPM Registry
