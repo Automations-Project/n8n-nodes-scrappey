@@ -1,16 +1,53 @@
-node_modules
-.DS_Store
-.tmp
-tmp
-dist
-npm-debug.log*
-yarn.lock
-.vscode/launch.json
-.npmrc
-.PublishKey
-logs
+# Dependencies
+node_modules/
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
-.vscode
-.windsurf
+
+# Build outputs
+dist/
+.tmp/
+tmp/
+
+# Logs
+logs/
+npm-debug.log*
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+!.vscode/extensions.json
+.windsurf/
+*.swp
+*.swo
+*~
+
+# Environment and config files
+.env
+.env.local
+.env.*.local
+.npmrc
+.PublishKey
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Cache directories
+.cache/
+.parcel-cache/
