@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.3.0)'
+        required: true
+        type: string
 
 env:
   NODE_VERSION: '18.x'
@@ -22,10 +28,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version from tag
+      - name: Get version from tag or input
         id: get_version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: ${VERSION}"
 
@@ -66,7 +76,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run linting
-        run: pnpm exec eslint . --ext .ts,.js
+        run: pnpm exec eslint "**/*.{ts,js}" --ignore-path .gitignore
 
       - name: Check formatting
         run: pnpm exec prettier --check .
