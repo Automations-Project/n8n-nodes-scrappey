@@ -1,0 +1,313 @@
+name: Release & Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  NODE_VERSION: '18.x'
+  PNPM_VERSION: '9.1.4'
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      should_release: ${{ steps.should_release.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Detected version: ${VERSION}"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Invalid version format. Expected: x.y.z"
+            exit 1
+          fi
+
+      - name: Check if should release
+        id: should_release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=true" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-test:
+    name: Build and Test for Release
+    runs-on: ubuntu-latest
+    needs: validate-release
+    if: needs.validate-release.outputs.should_release == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linting
+        run: pnpm exec eslint . --ext .ts,.js
+
+      - name: Check formatting
+        run: pnpm exec prettier --check .
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Update version in package.json
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
+          pnpm version --no-git-tag-version "${NEW_VERSION}"
+
+      - name: Update node version
+        run: node scripts/update-node-json.js
+
+      - name: Pack package
+        run: pnpm pack
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: |
+            *.tgz
+            dist/
+          retention-days: 30
+
+  publish-github:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-and-test]
+    if: needs.validate-release.outputs.should_release == 'true'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@automations-project'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Update version in package.json
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
+          pnpm version --no-git-tag-version "${NEW_VERSION}"
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Configure npm for GitHub Packages
+        run: |
+          echo "@automations-project:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to GitHub Packages
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-npm:
+    name: Publish to NPM Registry
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-and-test]
+    if: needs.validate-release.outputs.should_release == 'true' && vars.PUBLISH_TO_NPM == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Update version in package.json
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          NEW_VERSION="${{ needs.validate-release.outputs.version }}"
+          pnpm version --no-git-tag-version "${NEW_VERSION}"
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Publish to NPM
+        run: pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-and-test, publish-github]
+    if: needs.validate-release.outputs.should_release == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-package
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="v${{ needs.validate-release.outputs.version }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="🎉 Initial release of Scrappey n8n Node v${{ needs.validate-release.outputs.version }}"
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG="- Bug fixes and improvements"
+            fi
+          fi
+          
+          {
+            echo "changelog<<EOF"
+            echo "## What's Changed"
+            echo ""
+            echo "$CHANGELOG"
+            echo ""
+            echo "## Installation"
+            echo ""
+            echo "### From GitHub Packages:"
+            echo '```bash'
+            echo "npm install @automations-project/n8n-nodes-scrappey@${{ needs.validate-release.outputs.version }}"
+            echo '```'
+            echo ""
+            echo "### In n8n:"
+            echo "1. Go to Settings → Community Nodes"
+            echo "2. Enter: \`@automations-project/n8n-nodes-scrappey\`"
+            echo "3. Click Install"
+            echo ""
+            echo "## Features"
+            echo "- 🛠️ **Request Builder**: Create customized HTTP/browser requests"
+            echo "- 🔁 **Auto-Retry HTTP**: Automatically retry failed HTTP requests"
+            echo "- 🌐 **Auto-Retry Browser**: Browser-based retry with anti-bot protection"
+            echo "- 🔒 **Anti-Bot Bypass**: Handle Cloudflare, Datadome, hCaptcha, reCAPTCHA"
+            echo "- 🌍 **Proxy Support**: Residential, datacenter, and mobile proxies"
+            echo "- 🎯 **Country Targeting**: Geo-targeted proxy selection"
+            echo ""
+            echo "**Full Changelog**: https://github.com/Automations-Project/n8n-nodes-scrappey/compare/${PREV_TAG}...${VERSION}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.validate-release.outputs.version }}
+          release_name: v${{ needs.validate-release.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./automations-project-n8n-nodes-scrappey-${{ needs.validate-release.outputs.version }}.tgz
+          asset_name: n8n-nodes-scrappey-${{ needs.validate-release.outputs.version }}.tgz
+          asset_content_type: application/gzip
+
+  notify:
+    name: Notify Success
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    if: always() && needs.validate-release.outputs.should_release == 'true'
+    steps:
+      - name: Success notification
+        if: needs.create-release.result == 'success'
+        run: |
+          echo "🎉 Successfully released v${{ needs.validate-release.outputs.version }}"
+          echo "📦 Package published to GitHub Packages"
+          echo "🏷️ GitHub release created"
+
+      - name: Failure notification
+        if: needs.create-release.result == 'failure'
+        run: |
+          echo "❌ Release failed for v${{ needs.validate-release.outputs.version }}"
+          exit 1 

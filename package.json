@@ -23,9 +23,18 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "tsc && gulp build:icons",
+		"build:watch": "tsc --watch",
 		"deploy": "node scripts/update-node-json.js && node scripts/deploy.js",
 		"start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start",
-		"clean": "rm -rf node_modules pnpm-lock.yaml package-lock.json dist"
+		"clean": "rm -rf node_modules pnpm-lock.yaml package-lock.json dist",
+		"lint": "eslint . --ext .ts,.js",
+		"lint:fix": "eslint . --ext .ts,.js --fix",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"type-check": "tsc --noEmit",
+		"prepack": "npm run build",
+		"test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
+		"validate": "npm run lint && npm run format:check && npm run type-check && npm run build"
 	},
 	"files": [
 		"dist"

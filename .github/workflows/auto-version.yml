@@ -1,0 +1,159 @@
+name: Auto Version & Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '.github/**'
+      - '*.md'
+
+jobs:
+  auto-version:
+    name: Auto Version Bump
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[skip version]') }}
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '9.1.4'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine version bump type
+        id: version_type
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+          
+          if [[ $COMMIT_MSG =~ \[major\] ]] || [[ $COMMIT_MSG =~ BREAKING[[:space:]]CHANGE ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+            echo "📈 Major version bump detected"
+          elif [[ $COMMIT_MSG =~ \[minor\] ]] || [[ $COMMIT_MSG =~ ^feat ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+            echo "📊 Minor version bump detected"
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "🔧 Patch version bump detected"
+          fi
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          echo "current=${CURRENT}" >> $GITHUB_OUTPUT
+          echo "Current version: ${CURRENT}"
+
+      - name: Bump version
+        id: new_version
+        run: |
+          TYPE="${{ steps.version_type.outputs.type }}"
+          NEW_VERSION=$(pnpm version --no-git-tag-version $TYPE --preid='' | sed 's/^v//')
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "New version: ${NEW_VERSION}"
+
+      - name: Update node.json version
+        run: node scripts/update-node-json.js
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected"
+          fi
+
+      - name: Commit version bump
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json nodes/Scrappey/Scrappey.node.json
+          git commit -m "chore: bump version to v${{ steps.new_version.outputs.version }} [skip ci]"
+
+      - name: Create and push tag
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git tag "v${{ steps.new_version.outputs.version }}"
+          git push origin main
+          git push origin "v${{ steps.new_version.outputs.version }}"
+
+      - name: Create changelog
+        if: steps.check_changes.outputs.has_changes == 'true'
+        id: changelog
+        run: |
+          NEW_VERSION="v${{ steps.new_version.outputs.version }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="🎉 Initial release"
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD~1 --pretty=format:"- %s" --no-merges)
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG="- Minor improvements and bug fixes"
+            fi
+          fi
+          
+          echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
+
+      - name: Trigger release workflow
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'release.yml',
+              ref: 'main',
+              inputs: {
+                version: '${{ steps.new_version.outputs.version }}',
+                release_type: '${{ steps.version_type.outputs.type }}'
+              }
+            });
+
+      - name: Output summary
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          echo "## 🚀 Auto Version Bump Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Previous Version**: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version**: ${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bump Type**: ${{ steps.version_type.outputs.type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag Created**: v${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Changes:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.changelog.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Release workflow triggered automatically**" >> $GITHUB_STEP_SUMMARY
+
+      - name: No changes summary
+        if: steps.check_changes.outputs.has_changes == 'false'
+        run: |
+          echo "## ℹ️ No Version Bump Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No changes detected that require a version bump." >> $GITHUB_STEP_SUMMARY
+          echo "Current version remains: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY 
