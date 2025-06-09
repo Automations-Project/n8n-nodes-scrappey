@@ -102,8 +102,8 @@ pnpm run start:dev
 - **Whitelisted Domains** (optional): JSON array of allowed domains for enhanced security
 
 ## 📋 Operation Modes
-
-### 🛠️ Request Builder
+![Operations Types](.github/assets/operations.jpg)
+### 🛠️ Request Builder (Manual)
 
 **Primary mode for creating custom requests with full control**
 
