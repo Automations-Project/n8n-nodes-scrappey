@@ -155,3 +155,32 @@ export const evaluateExpression = (
 
 	return value;
 };
+export function generateUUID(): string {
+  // Create an array of 16 random bytes.
+  const randomBytes = new Uint8Array(16);
+  crypto.getRandomValues(randomBytes);
+
+  // Set the version number to 4.
+  // The 7th byte (index 6) needs to have its most significant nibble set to 0100.
+  randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40;
+
+  // Set the variant.
+  // The 9th byte (index 8) needs to have its two most significant bits set to 10.
+  randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80;
+
+  // Convert the byte array to a hexadecimal string.
+  const byteToHex = (byte: number): string => {
+    return ('0' + byte.toString(16)).slice(-2);
+  };
+
+  const hexBytes = Array.from(randomBytes).map(byteToHex);
+
+  // Format the hexadecimal string with hyphens.
+  return [
+    hexBytes.slice(0, 4).join(''),
+    hexBytes.slice(4, 6).join(''),
+    hexBytes.slice(6, 8).join(''),
+    hexBytes.slice(8, 10).join(''),
+    hexBytes.slice(10).join(''),
+  ].join('-');
+}

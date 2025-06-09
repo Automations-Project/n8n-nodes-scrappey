@@ -62,8 +62,5 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
-  },
-  "dependencies": {
-    "uuid": "^11.1.0"
   }
 }

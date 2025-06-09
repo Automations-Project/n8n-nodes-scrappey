@@ -2,9 +2,9 @@
 /* eslint-disable n8n-nodes-base/node-param-description-excess-final-period */
 /* eslint-disable n8n-nodes-base/node-param-options-type-unsorted-items */
 /* eslint-disable n8n-nodes-base/node-param-required-false */
-import { v4 as uuidGenerate } from 'uuid';
 import { INodeProperties } from 'n8n-workflow';
-import { Static_Country_Proxies } from './utils';
+import { Static_Country_Proxies , generateUUID} from './utils';
+
 export const publicFields: INodeProperties[] = [
 	{
 		displayName:
@@ -292,7 +292,7 @@ export const publicFields: INodeProperties[] = [
 		displayName: 'User Session',
 		name: 'userSession',
 		type: 'string',
-		default: uuidGenerate(),
+		default: generateUUID(),
 		hint: 'User session identifier to use for the request',
 		required: false,
 		displayOptions: {
