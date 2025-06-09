@@ -199,13 +199,15 @@ jobs:
       actions: write
     steps:
       - name: Wait for tag to be available
-        run: sleep 10
+        run: sleep 15
 
       - name: Trigger release workflow
         uses: actions/github-script@v7
         with:
           script: |
             const version = '${{ needs.auto-version.outputs.new_version }}';
+
+            console.log(`🚀 Triggering release workflow for version ${version}`);
 
             try {
               await github.rest.actions.createWorkflowDispatch({
@@ -214,13 +216,31 @@ jobs:
                 workflow_id: 'release.yml',
                 ref: 'main',
                 inputs: {
-                  version_type: 'auto',
+                  version_type: 'patch',
                   force_version: version
                 }
               });
 
               console.log(`✅ Successfully triggered release workflow for version ${version}`);
             } catch (error) {
-              console.log(`⚠️ Failed to trigger release workflow: ${error.message}`);
-              console.log('This is expected if the release workflow is already running from the tag push');
+              console.log(`❌ Failed to trigger release workflow: ${error.message}`);
+
+              // Try to find if the release workflow is already running
+              try {
+                const runs = await github.rest.actions.listWorkflowRuns({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'release.yml',
+                  status: 'in_progress',
+                  per_page: 5
+                });
+
+                if (runs.data.workflow_runs.length > 0) {
+                  console.log('🔄 Release workflow is already running, skipping trigger');
+                } else {
+                  console.log('⚠️ No running release workflow found, but trigger failed');
+                }
+              } catch (listError) {
+                console.log('Could not check workflow status');
+              }
             }

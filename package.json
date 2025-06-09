@@ -35,7 +35,8 @@
 		"prepack": "npm run build",
 		"test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
 		"validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
-		"check-versions": "node scripts/check-versions.js"
+		"check-versions": "node scripts/check-versions.js",
+		"check-workflows": "node scripts/check-yaml.js"
 	},
 	"files": [
 		"dist"
@@ -54,6 +55,7 @@
 		"eslint": "^8.56.0",
 		"eslint-plugin-n8n-nodes-base": "^1.16.1",
 		"gulp": "^4.0.2",
+		"js-yaml": "^4.1.0",
 		"n8n": "^1.88.0",
 		"prettier": "^3.3.2",
 		"typescript": "^5.5.3"

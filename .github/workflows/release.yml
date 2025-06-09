@@ -105,20 +105,20 @@ jobs:
           echo "  GitHub: ${GITHUB_VERSION}"
           echo "  Git: ${GIT_VERSION}"
 
-          # Function to compare versions
-          version_compare() {
-            printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1
+          # Function to compare versions (returns 0 if v1 > v2, 1 if v1 <= v2)
+          version_gt() {
+            [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n1)" != "$1" ]
           }
 
-          # Find the highest published version
-          HIGHEST_VERSION="0.0.0"
-          for ver in "$NPM_VERSION" "$GITHUB_VERSION" "$GIT_VERSION"; do
-            if [ "$(version_compare "$HIGHEST_VERSION" "$ver")" = "$HIGHEST_VERSION" ] && [ "$ver" != "$HIGHEST_VERSION" ]; then
-              HIGHEST_VERSION="$ver"
+          # Find the highest PUBLISHED version (exclude git tags - they're just markers)
+          HIGHEST_PUBLISHED="0.0.0"
+          for ver in "$NPM_VERSION" "$GITHUB_VERSION"; do
+            if [ "$ver" != "0.0.0" ] && version_gt "$ver" "$HIGHEST_PUBLISHED"; then
+              HIGHEST_PUBLISHED="$ver"
             fi
           done
 
-          echo "🔍 Highest published version: ${HIGHEST_VERSION}"
+          echo "🔍 Highest published version: ${HIGHEST_PUBLISHED}"
 
           # Determine version bump type
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.force_version }}" ]; then
@@ -145,7 +145,7 @@ jobs:
             fi
 
             # Calculate new version based on highest published version
-            IFS='.' read -r major minor patch <<< "$HIGHEST_VERSION"
+            IFS='.' read -r major minor patch <<< "$HIGHEST_PUBLISHED"
             case $BUMP_TYPE in
               major)
                 NEW_VERSION="$((major + 1)).0.0"
@@ -164,12 +164,30 @@ jobs:
           SHOULD_RELEASE="true"
           VERSION_CHANGED="true"
 
+          # Check against published versions only (not git tags)
           for ver in "$NPM_VERSION" "$GITHUB_VERSION"; do
-            if [ "$ver" != "0.0.0" ] && [ "$(version_compare "$NEW_VERSION" "$ver")" != "$NEW_VERSION" ]; then
+            if [ "$ver" != "0.0.0" ] && ! version_gt "$NEW_VERSION" "$ver"; then
               echo "❌ New version ${NEW_VERSION} is not higher than published version ${ver}"
               SHOULD_RELEASE="false"
             fi
           done
+
+          # Special case: if this is a manual release and the version already exists,
+          # but we want to republish (e.g., failed previous attempt), allow it
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$SHOULD_RELEASE" = "false" ]; then
+            echo "🔄 Manual release mode - checking if we should allow republishing..."
+            # Allow republishing if the new version equals the highest published version
+            # but is higher than at least one published source
+            if [ "$NEW_VERSION" = "$HIGHEST_PUBLISHED" ]; then
+              for ver in "$NPM_VERSION" "$GITHUB_VERSION"; do
+                if [ "$ver" != "0.0.0" ] && version_gt "$NEW_VERSION" "$ver"; then
+                  echo "✅ Allowing republish: ${NEW_VERSION} > ${ver}"
+                  SHOULD_RELEASE="true"
+                  break
+                fi
+              done
+            fi
+          fi
 
           # Check if package.json needs updating
           if [ "$PACKAGE_VERSION" = "$NEW_VERSION" ]; then
