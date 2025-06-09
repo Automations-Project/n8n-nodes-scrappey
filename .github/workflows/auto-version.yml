@@ -7,7 +7,6 @@ on:
     paths-ignore:
       - 'README.md'
       - 'docs/**'
-      - '.github/**'
       - '*.md'
 
 jobs:
@@ -20,6 +19,9 @@ jobs:
       packages: write
       pull-requests: write
       actions: write
+    outputs:
+      version_bumped: ${{ steps.check_changes.outputs.has_changes }}
+      new_version: ${{ steps.new_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,12 +52,15 @@ jobs:
           if [[ $COMMIT_MSG =~ \[major\] ]] || [[ $COMMIT_MSG =~ BREAKING[[:space:]]CHANGE ]]; then
             echo "type=major" >> $GITHUB_OUTPUT
             echo "📈 Major version bump detected"
-          elif [[ $COMMIT_MSG =~ \[minor\] ]] || [[ $COMMIT_MSG =~ ^feat ]]; then
+          elif [[ $COMMIT_MSG =~ \[minor\] ]] || [[ $COMMIT_MSG =~ ^feat ]] || [[ $COMMIT_MSG =~ ^feat: ]] || [[ $COMMIT_MSG =~ ^feat\( ]]; then
             echo "type=minor" >> $GITHUB_OUTPUT
             echo "📊 Minor version bump detected"
-          else
+          elif [[ $COMMIT_MSG =~ ^fix ]] || [[ $COMMIT_MSG =~ ^fix: ]] || [[ $COMMIT_MSG =~ ^fix\( ]] || [[ $COMMIT_MSG =~ \[patch\] ]]; then
             echo "type=patch" >> $GITHUB_OUTPUT
             echo "🔧 Patch version bump detected"
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "🔧 Default patch version bump (no specific pattern matched)"
           fi
 
       - name: Get current version
@@ -74,7 +79,13 @@ jobs:
           echo "New version: ${NEW_VERSION}"
 
       - name: Update node.json version
-        run: node scripts/update-node-json.js
+        run: |
+          if [ -f "scripts/update-node-json.js" ]; then
+            node scripts/update-node-json.js
+            echo "📝 Updated node.json version"
+          else
+            echo "⚠️ scripts/update-node-json.js not found, skipping node.json update"
+          fi
 
       - name: Check for changes
         id: check_changes
@@ -92,7 +103,10 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add package.json nodes/Scrappey/Scrappey.node.json
+          git add package.json
+          if [ -f "nodes/Scrappey/Scrappey.node.json" ]; then
+            git add nodes/Scrappey/Scrappey.node.json
+          fi
           git commit -m "chore: bump version to v${{ steps.new_version.outputs.version }} [skip ci]"
 
       - name: Create and push tag
@@ -175,3 +189,38 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "No changes detected that require a version bump." >> $GITHUB_STEP_SUMMARY
           echo "Current version remains: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY
+
+  trigger-release:
+    name: Trigger Release Workflow
+    runs-on: ubuntu-latest
+    needs: auto-version
+    if: needs.auto-version.outputs.version_bumped == 'true'
+    permissions:
+      actions: write
+    steps:
+      - name: Wait for tag to be available
+        run: sleep 10
+
+      - name: Trigger release workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ needs.auto-version.outputs.new_version }}';
+
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'release.yml',
+                ref: 'main',
+                inputs: {
+                  version_type: 'auto',
+                  force_version: version
+                }
+              });
+
+              console.log(`✅ Successfully triggered release workflow for version ${version}`);
+            } catch (error) {
+              console.log(`⚠️ Failed to trigger release workflow: ${error.message}`);
+              console.log('This is expected if the release workflow is already running from the tag push');
+            }

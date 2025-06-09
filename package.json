@@ -34,7 +34,8 @@
 		"type-check": "tsc --noEmit",
 		"prepack": "npm run build",
 		"test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
-		"validate": "npm run lint && npm run format:check && npm run type-check && npm run build"
+		"validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
+		"check-versions": "node scripts/check-versions.js"
 	},
 	"files": [
 		"dist"

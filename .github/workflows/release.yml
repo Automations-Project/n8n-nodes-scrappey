@@ -6,9 +6,19 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release (e.g., 0.3.0)'
-        required: true
+      version_type:
+        description: 'Version bump type'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - 'auto'
+          - 'patch'
+          - 'minor'
+          - 'major'
+      force_version:
+        description: 'Force specific version (e.g., 0.3.5) - overrides version_type'
+        required: false
         type: string
 
 env:
@@ -16,50 +26,215 @@ env:
   PNPM_VERSION: '9.1.4'
 
 jobs:
-  validate-release:
-    name: Validate Release
+  detect-and-bump-version:
+    name: Detect and Bump Version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      should_release: ${{ steps.should_release.outputs.result }}
+      new_version: ${{ steps.determine_version.outputs.new_version }}
+      should_release: ${{ steps.determine_version.outputs.should_release }}
+      version_changed: ${{ steps.determine_version.outputs.version_changed }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get version from tag or input
-        id: get_version
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get current package.json version
+        id: package_version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+          echo "📦 Current package.json version: ${PACKAGE_VERSION}"
+
+      - name: Get latest published versions
+        id: published_versions
+        run: |
+          # Get latest version from npm
+          NPM_VERSION=""
+          if npm view @nskha/n8n-nodes-scrappey version 2>/dev/null; then
+            NPM_VERSION=$(npm view @nskha/n8n-nodes-scrappey version 2>/dev/null || echo "0.0.0")
           else
-            VERSION=${GITHUB_REF#refs/tags/v}
+            NPM_VERSION="0.0.0"
           fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Detected version: ${VERSION}"
+          echo "npm_version=${NPM_VERSION}" >> $GITHUB_OUTPUT
+          echo "📦 Latest npm version: ${NPM_VERSION}"
 
-      - name: Validate version format
+          # Get latest version from GitHub packages
+          GITHUB_VERSION=""
+          if npm view @automations-project/n8n-nodes-scrappey version --registry=https://npm.pkg.github.com 2>/dev/null; then
+            GITHUB_VERSION=$(npm view @automations-project/n8n-nodes-scrappey version --registry=https://npm.pkg.github.com 2>/dev/null || echo "0.0.0")
+          else
+            GITHUB_VERSION="0.0.0"
+          fi
+          echo "github_version=${GITHUB_VERSION}" >> $GITHUB_OUTPUT
+          echo "📦 Latest GitHub package version: ${GITHUB_VERSION}"
+
+          # Get latest git tag version
+          GIT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          echo "git_version=${GIT_VERSION}" >> $GITHUB_OUTPUT
+          echo "🏷️ Latest git tag version: ${GIT_VERSION}"
+
+      - name: Determine new version
+        id: determine_version
         run: |
-          VERSION="${{ steps.get_version.outputs.version }}"
-          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid version format. Expected: x.y.z"
-            exit 1
+          PACKAGE_VERSION="${{ steps.package_version.outputs.version }}"
+          NPM_VERSION="${{ steps.published_versions.outputs.npm_version }}"
+          GITHUB_VERSION="${{ steps.published_versions.outputs.github_version }}"
+          GIT_VERSION="${{ steps.published_versions.outputs.git_version }}"
+
+          echo "Current versions:"
+          echo "  Package.json: ${PACKAGE_VERSION}"
+          echo "  NPM: ${NPM_VERSION}"
+          echo "  GitHub: ${GITHUB_VERSION}"
+          echo "  Git: ${GIT_VERSION}"
+
+          # Function to compare versions
+          version_compare() {
+            printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1
+          }
+
+          # Find the highest published version
+          HIGHEST_VERSION="0.0.0"
+          for ver in "$NPM_VERSION" "$GITHUB_VERSION" "$GIT_VERSION"; do
+            if [ "$(version_compare "$HIGHEST_VERSION" "$ver")" = "$HIGHEST_VERSION" ] && [ "$ver" != "$HIGHEST_VERSION" ]; then
+              HIGHEST_VERSION="$ver"
+            fi
+          done
+
+          echo "🔍 Highest published version: ${HIGHEST_VERSION}"
+
+          # Determine version bump type
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.force_version }}" ]; then
+            # Manual dispatch with forced version
+            NEW_VERSION="${{ github.event.inputs.force_version }}"
+            echo "🎯 Using forced version: ${NEW_VERSION}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            # Triggered by tag push
+            NEW_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "🏷️ Using tag version: ${NEW_VERSION}"
+          else
+            # Auto-determine version bump
+            BUMP_TYPE="${{ github.event.inputs.version_type }}"
+            if [ "$BUMP_TYPE" = "auto" ]; then
+              # Analyze recent commits to determine bump type
+              COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+              if [[ $COMMIT_MSG =~ \[major\] ]] || [[ $COMMIT_MSG =~ BREAKING[[:space:]]CHANGE ]]; then
+                BUMP_TYPE="major"
+              elif [[ $COMMIT_MSG =~ \[minor\] ]] || [[ $COMMIT_MSG =~ ^feat ]]; then
+                BUMP_TYPE="minor"
+              else
+                BUMP_TYPE="patch"
+              fi
+            fi
+
+            # Calculate new version based on highest published version
+            IFS='.' read -r major minor patch <<< "$HIGHEST_VERSION"
+            case $BUMP_TYPE in
+              major)
+                NEW_VERSION="$((major + 1)).0.0"
+                ;;
+              minor)
+                NEW_VERSION="${major}.$((minor + 1)).0"
+                ;;
+              patch)
+                NEW_VERSION="${major}.${minor}.$((patch + 1))"
+                ;;
+            esac
+            echo "📈 Auto-bumped ${BUMP_TYPE} version: ${NEW_VERSION}"
           fi
 
-      - name: Check if should release
-        id: should_release
+          # Validate new version is higher than all published versions
+          SHOULD_RELEASE="true"
+          VERSION_CHANGED="true"
+
+          for ver in "$NPM_VERSION" "$GITHUB_VERSION"; do
+            if [ "$ver" != "0.0.0" ] && [ "$(version_compare "$NEW_VERSION" "$ver")" != "$NEW_VERSION" ]; then
+              echo "❌ New version ${NEW_VERSION} is not higher than published version ${ver}"
+              SHOULD_RELEASE="false"
+            fi
+          done
+
+          # Check if package.json needs updating
+          if [ "$PACKAGE_VERSION" = "$NEW_VERSION" ]; then
+            VERSION_CHANGED="false"
+            echo "ℹ️ Package.json already has the target version"
+          fi
+
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "should_release=${SHOULD_RELEASE}" >> $GITHUB_OUTPUT
+          echo "version_changed=${VERSION_CHANGED}" >> $GITHUB_OUTPUT
+
+          echo "✅ Final decision:"
+          echo "  New version: ${NEW_VERSION}"
+          echo "  Should release: ${SHOULD_RELEASE}"
+          echo "  Version changed: ${VERSION_CHANGED}"
+
+      - name: Update package.json and node.json versions
+        if: steps.determine_version.outputs.version_changed == 'true'
         run: |
-          echo "result=true" >> $GITHUB_OUTPUT
+          NEW_VERSION="${{ steps.determine_version.outputs.new_version }}"
+
+          # Update package.json
+          node -e "
+            const pkg = require('./package.json');
+            pkg.version = '${NEW_VERSION}';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "📝 Updated package.json to version ${NEW_VERSION}"
+
+          # Update node.json if script exists
+          if [ -f "scripts/update-node-json.js" ]; then
+            node scripts/update-node-json.js
+            echo "📝 Updated node.json version"
+          fi
+
+      - name: Commit and tag new version
+        if: steps.determine_version.outputs.version_changed == 'true' && github.event_name == 'workflow_dispatch'
+        run: |
+          NEW_VERSION="${{ steps.determine_version.outputs.new_version }}"
+
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add package.json
+          if [ -f "nodes/Scrappey/Scrappey.node.json" ]; then
+            git add nodes/Scrappey/Scrappey.node.json
+          fi
+
+          git commit -m "chore: bump version to v${NEW_VERSION} [skip ci]" || echo "No changes to commit"
+
+          # Create and push tag
+          git tag "v${NEW_VERSION}" || echo "Tag already exists"
+          git push origin HEAD || echo "Failed to push commits"
+          git push origin "v${NEW_VERSION}" || echo "Failed to push tag"
 
   build-and-test:
     name: Build and Test for Release
     runs-on: ubuntu-latest
-    needs: validate-release
-    if: needs.validate-release.outputs.should_release == 'true'
+    needs: detect-and-bump-version
+    if: needs.detect-and-bump-version.outputs.should_release == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -87,16 +262,6 @@ jobs:
       - name: Build project
         run: pnpm run build
 
-      - name: Verify version consistency
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          TAG_VERSION="${{ needs.validate-release.outputs.version }}"
-          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
-            echo "Error: package.json version ($PACKAGE_VERSION) doesn't match tag version ($TAG_VERSION)"
-            exit 1
-          fi
-          echo "✅ Version consistency verified: $PACKAGE_VERSION"
-
       - name: Pack package
         run: pnpm pack
 
@@ -112,14 +277,16 @@ jobs:
   publish-github:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
-    needs: [validate-release, build-and-test]
-    if: needs.validate-release.outputs.should_release == 'true'
+    needs: [detect-and-bump-version, build-and-test]
+    if: needs.detect-and-bump-version.outputs.should_release == 'true'
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -151,10 +318,11 @@ jobs:
         run: |
           # Create a backup of original package.json
           cp package.json package.json.backup
-          # Update package name for GitHub Packages
+          # Update package name and version for GitHub Packages
           node -e "
             const pkg = require('./package.json');
             pkg.name = '@automations-project/n8n-nodes-scrappey';
+            pkg.version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
@@ -169,11 +337,13 @@ jobs:
   publish-npm:
     name: Publish to NPM Registry
     runs-on: ubuntu-latest
-    needs: [validate-release, build-and-test]
-    if: needs.validate-release.outputs.should_release == 'true'
+    needs: [detect-and-bump-version, build-and-test]
+    if: needs.detect-and-bump-version.outputs.should_release == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -193,35 +363,104 @@ jobs:
       - name: Build project
         run: pnpm run build
 
+      - name: Update version in package.json
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            pkg.version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+
       - name: Publish to NPM
         run: pnpm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [detect-and-bump-version, publish-github, publish-npm]
+    if: needs.detect-and-bump-version.outputs.should_release == 'true' && github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          NEW_VERSION="v${{ needs.detect-and-bump-version.outputs.new_version }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="🎉 Initial release"
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"* %s" --no-merges | head -10)
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG="* Minor improvements and bug fixes"
+            fi
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changelog = `${{ steps.changelog.outputs.changelog }}`;
+            const version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
+
+            const releaseBody = `## 🚀 Release v${version}
+
+            ### Changes
+            ${changelog}
+
+            ### Installation
+            \`\`\`bash
+            npm install @nskha/n8n-nodes-scrappey@${version}
+            \`\`\`
+
+            Or in n8n: Settings → Community Nodes → \`@nskha/n8n-nodes-scrappey\``;
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+              name: `v${version}`,
+              body: releaseBody,
+              draft: false,
+              prerelease: false
+            });
+
   notify:
     name: Notify Success
     runs-on: ubuntu-latest
-    needs: [validate-release, publish-github, publish-npm]
-    if: always() && needs.validate-release.outputs.should_release == 'true'
+    needs: [detect-and-bump-version, publish-github, publish-npm]
+    if: always() && needs.detect-and-bump-version.outputs.should_release == 'true'
     steps:
       - name: Success notification
         if: needs.publish-github.result == 'success' && needs.publish-npm.result == 'success'
         run: |
-          echo "🎉 Successfully published v${{ needs.validate-release.outputs.version }}"
+          echo "🎉 Successfully published v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "📦 Package published to GitHub Packages"
           echo "📦 Package published to npm.js"
-          echo "🏷️ GitHub release created by auto-version workflow"
+          echo "🏷️ GitHub release created"
 
       - name: Partial success notification
         if: (needs.publish-github.result == 'success' && needs.publish-npm.result != 'success') || (needs.publish-github.result != 'success' && needs.publish-npm.result == 'success')
         run: |
-          echo "⚠️ Partial success for v${{ needs.validate-release.outputs.version }}"
+          echo "⚠️ Partial success for v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "GitHub Packages: ${{ needs.publish-github.result }}"
           echo "npm.js: ${{ needs.publish-npm.result }}"
 
       - name: Failure notification
         if: needs.publish-github.result == 'failure' && needs.publish-npm.result == 'failure'
         run: |
-          echo "❌ Publishing failed for v${{ needs.validate-release.outputs.version }}"
+          echo "❌ Publishing failed for v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "Both GitHub Packages and npm.js publishing failed"
           exit 1
