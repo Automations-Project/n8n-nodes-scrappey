@@ -11,9 +11,6 @@ importers:
       n8n-workflow:
         specifier: '*'
         version: 1.82.0
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^7.15.0
@@ -6824,10 +6821,6 @@ packages:
 
   uuid@11.0.2:
     resolution: {integrity: sha512-14FfcOJmqdjbBPdDjFQyk/SdT4NySW4eM0zcG+HqbHP5jzuH56xO3J1DGhgs/cEMCfwYi3HQI1gnTO62iaG+tQ==}
-    hasBin: true
-
-  uuid@11.1.0:
-    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
   uuid@8.3.2:
@@ -16662,8 +16655,6 @@ snapshots:
   uuid@10.0.0: {}
 
   uuid@11.0.2: {}
-
-  uuid@11.1.0: {}
 
   uuid@8.3.2: {}
 

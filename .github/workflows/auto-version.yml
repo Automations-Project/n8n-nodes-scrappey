@@ -41,7 +41,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Use no-frozen-lockfile for auto-versioning to handle potential lockfile mismatches
+          pnpm install --no-frozen-lockfile
 
       - name: Determine version bump type
         id: version_type

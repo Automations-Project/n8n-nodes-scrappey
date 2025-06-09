@@ -36,7 +36,8 @@
     "test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
     "validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
     "check-versions": "node scripts/check-versions.js",
-    "check-workflows": "node scripts/check-yaml.js"
+    "check-workflows": "node scripts/check-yaml.js",
+    "fix-lockfile": "rm -f pnpm-lock.yaml && pnpm install"
   },
   "files": [
     "dist"

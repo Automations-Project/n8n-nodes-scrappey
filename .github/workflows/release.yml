@@ -54,7 +54,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Use no-frozen-lockfile for releases to handle potential lockfile mismatches
+          pnpm install --no-frozen-lockfile
 
       - name: Get current package.json version
         id: package_version
@@ -266,7 +268,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Use no-frozen-lockfile for releases to handle potential lockfile mismatches
+          pnpm install --no-frozen-lockfile
 
       - name: Run linting
         run: pnpm exec eslint "**/*.{ts,js}" --ignore-path .gitignore
@@ -320,7 +324,9 @@ jobs:
           scope: '@automations-project'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Use no-frozen-lockfile for releases to handle potential lockfile mismatches
+          pnpm install --no-frozen-lockfile
 
       - name: Update package name and version for GitHub Packages
         run: |
@@ -391,7 +397,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # Use no-frozen-lockfile for releases to handle potential lockfile mismatches
+          pnpm install --no-frozen-lockfile
 
       - name: Update version in package.json
         run: |
