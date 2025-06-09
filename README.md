@@ -1,4 +1,4 @@
-![Banner](banner.webp)
+![Banner](.github/assets/banner.webp)
 
 # Scrappey n8n Node
 
@@ -132,13 +132,14 @@ pnpm run start:dev
 ### 🔁 HTTP Auto-Retry
 
 **Fallback solution for failed n8n HTTP Request nodes**
-
+![Banner](.github/assets/example.svg)
 Connect the **error output** (red connector) of a standard HTTP Request node to this operation. It automatically retries the same request through Scrappey's network when blocked by:
 
 - Cloudflare challenges
 - Rate limiting
 - IP blocks
 - Basic anti-bot measures
+
 
 ### 🌐 Browser Auto-Retry
 
