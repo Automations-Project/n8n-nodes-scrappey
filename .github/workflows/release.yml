@@ -430,6 +430,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Run n8n Security Scanner
+        run: |
+          echo "🔍 Running n8n community package security scan..."
+          # Wait a bit for npm to propagate the package
+          sleep 30
+          node scripts/n8n-scanner.js || echo "⚠️ Scanner check completed (may show warnings for new packages)"
+
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest

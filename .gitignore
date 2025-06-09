@@ -3,6 +3,7 @@ node_modules/
 package-lock.json
 yarn.lock
 .vscode/
+package.json.backup
 
 # Build outputs
 dist/
@@ -51,3 +52,4 @@ coverage/
 # Cache directories
 .cache/
 .parcel-cache/
+package-temp.json

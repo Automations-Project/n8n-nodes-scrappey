@@ -1,0 +1,73 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  n8n-security-scan:
+    name: n8n Community Package Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Run n8n Security Scanner
+        run: |
+          echo "🔍 Running n8n community package security scan..."
+          echo "Package: @nskha/n8n-nodes-scrappey"
+          echo "Checking published package security status..."
+
+          # Run the scanner
+          if node scripts/n8n-scanner.js; then
+            echo "✅ Security scan passed successfully!"
+            echo "SCAN_STATUS=passing" >> $GITHUB_ENV
+          else
+            echo "❌ Security scan failed or package not published"
+            echo "SCAN_STATUS=failing" >> $GITHUB_ENV
+
+            # Check if it's a "package not found" error (expected for unpublished packages)
+            if npx @n8n/scan-community-package @nskha/n8n-nodes-scrappey 2>&1 | grep -q "404"; then
+              echo "ℹ️ Package not published yet - this is expected for development"
+              echo "SCAN_STATUS=not-published" >> $GITHUB_ENV
+              exit 0  # Don't fail the workflow for unpublished packages
+            else
+              echo "⚠️ Real security issue detected!"
+              exit 1  # Fail the workflow for actual security issues
+            fi
+          fi
+
+      - name: Create security scan summary
+        run: |
+          echo "## 🔍 n8n Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** \`@nskha/n8n-nodes-scrappey\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ env.SCAN_STATUS }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          case "${{ env.SCAN_STATUS }}" in
+            "passing")
+              echo "✅ **Result:** Package passed all security checks" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Your n8n community package is secure and ready for use!" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "not-published")
+              echo "ℹ️ **Result:** Package not yet published to npm" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "This is expected for development versions. The security scan will run after publishing." >> $GITHUB_STEP_SUMMARY
+              ;;
+            "failing")
+              echo "❌ **Result:** Security issues detected" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Please review and fix the security issues before proceeding." >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac

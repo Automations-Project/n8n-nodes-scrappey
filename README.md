@@ -4,8 +4,21 @@
 
 [![CI](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/ci.yml/badge.svg)](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/ci.yml)
 [![Release](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/release.yml/badge.svg)](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/release.yml)
-[![Version](https://img.shields.io/github/package-json/v/Automations-Project/n8n-nodes-scrappey)](https://github.com/Automations-Project/n8n-nodes-scrappey)
+[![Security Scan](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/security.yml/badge.svg)](https://github.com/Automations-Project/n8n-nodes-scrappey/actions/workflows/security.yml)
+[![npm version](https://img.shields.io/npm/v/@nskha/n8n-nodes-scrappey?logo=npm)](https://www.npmjs.com/package/@nskha/n8n-nodes-scrappey)
+[![npm downloads](https://img.shields.io/npm/dm/@nskha/n8n-nodes-scrappey?logo=npm)](https://www.npmjs.com/package/@nskha/n8n-nodes-scrappey)
+[![n8n Node version](https://img.shields.io/github/package-json/v/Automations-Project/n8n-nodes-scrappey?logo=n8n&label=n8n%20node)](https://github.com/Automations-Project/n8n-nodes-scrappey)
+
+[![n8n compatibility](https://img.shields.io/github/v/release/n8n-io/n8n?logo=n8n&label=)](https://n8n.io)
+[![Node.js compatibility](https://img.shields.io/node/v/@nskha/n8n-nodes-scrappey?logo=node.js)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5%2B-blue?logo=typescript)](https://www.typescriptlang.org)
+[![Dependencies](https://img.shields.io/librariesio/release/npm/@nskha/n8n-nodes-scrappey?logo=dependabot)](https://libraries.io/npm/@nskha%2Fn8n-nodes-scrappey)
 [![License](https://img.shields.io/github/license/Automations-Project/n8n-nodes-scrappey)](LICENSE.md)
+
+[![GitHub stars](https://img.shields.io/github/stars/Automations-Project/n8n-nodes-scrappey?style=social)](https://github.com/Automations-Project/n8n-nodes-scrappey/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Automations-Project/n8n-nodes-scrappey?style=social)](https://github.com/Automations-Project/n8n-nodes-scrappey/network)
+[![GitHub issues](https://img.shields.io/github/issues/Automations-Project/n8n-nodes-scrappey)](https://github.com/Automations-Project/n8n-nodes-scrappey/issues)
+[![Last commit](https://img.shields.io/github/last-commit/Automations-Project/n8n-nodes-scrappey)](https://github.com/Automations-Project/n8n-nodes-scrappey/commits)
 
 > 🚀 **Advanced web scraping and anti-bot bypass node for n8n workflows**
 
