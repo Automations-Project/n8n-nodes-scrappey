@@ -322,17 +322,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build project
-        run: pnpm run build
-
-      - name: Configure npm for GitHub Packages
-        run: |
-          echo "@automations-project:registry=https://npm.pkg.github.com" >> .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update package name for GitHub Packages
+      - name: Update package name and version for GitHub Packages
         run: |
           # Create a backup of original package.json
           cp package.json package.json.backup
@@ -343,6 +333,31 @@ jobs:
             pkg.version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
+          echo "📝 Updated package.json for GitHub Packages: @automations-project/n8n-nodes-scrappey@${{ needs.detect-and-bump-version.outputs.new_version }}"
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Configure npm for GitHub Packages
+        run: |
+          echo "@automations-project:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify package configuration
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          EXPECTED_VERSION="${{ needs.detect-and-bump-version.outputs.new_version }}"
+          echo "Package name: ${PACKAGE_NAME}"
+          echo "Package version: ${PACKAGE_VERSION}"
+          echo "Expected version: ${EXPECTED_VERSION}"
+          if [ "$PACKAGE_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "❌ Version mismatch!"
+            exit 1
+          fi
+          echo "✅ GitHub package configuration verified"
 
       - name: Publish to GitHub Packages
         run: pnpm publish --no-git-checks
@@ -378,9 +393,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build project
-        run: pnpm run build
-
       - name: Update version in package.json
         run: |
           node -e "
@@ -388,9 +400,25 @@ jobs:
             pkg.version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
+          echo "📝 Updated package.json version to ${{ needs.detect-and-bump-version.outputs.new_version }}"
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Verify package version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          EXPECTED_VERSION="${{ needs.detect-and-bump-version.outputs.new_version }}"
+          echo "Package version: ${PACKAGE_VERSION}"
+          echo "Expected version: ${EXPECTED_VERSION}"
+          if [ "$PACKAGE_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "❌ Version mismatch! Package has ${PACKAGE_VERSION}, expected ${EXPECTED_VERSION}"
+            exit 1
+          fi
+          echo "✅ Version verified: ${PACKAGE_VERSION}"
 
       - name: Publish to NPM
-        run: pnpm publish --access public
+        run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
