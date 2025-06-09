@@ -426,7 +426,7 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [detect-and-bump-version, publish-github, publish-npm]
-    if: needs.detect-and-bump-version.outputs.should_release == 'true' && github.event_name == 'workflow_dispatch'
+    if: needs.detect-and-bump-version.outputs.should_release == 'true' && (needs.publish-github.result == 'success' || needs.publish-npm.result == 'success')
     permissions:
       contents: write
     steps:
@@ -454,12 +454,13 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         uses: actions/github-script@v7
         with:
           script: |
             const changelog = `${{ steps.changelog.outputs.changelog }}`;
             const version = '${{ needs.detect-and-bump-version.outputs.new_version }}';
+            const tagName = `v${version}`;
 
             const releaseBody = `## 🚀 Release v${version}
 
@@ -473,20 +474,64 @@ jobs:
 
             Or in n8n: Settings → Community Nodes → \`@nskha/n8n-nodes-scrappey\``;
 
-            await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${version}`,
-              name: `v${version}`,
-              body: releaseBody,
-              draft: false,
-              prerelease: false
-            });
+            try {
+              // Check if release already exists
+              console.log(`🔍 Checking if release ${tagName} already exists...`);
+
+              let existingRelease;
+              try {
+                const response = await github.rest.repos.getReleaseByTag({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag: tagName,
+                });
+                existingRelease = response.data;
+                console.log(`✅ Found existing release: ${existingRelease.html_url}`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`📝 Release ${tagName} does not exist, will create new one`);
+                  existingRelease = null;
+                } else {
+                  throw error;
+                }
+              }
+
+              if (existingRelease) {
+                // Update existing release
+                console.log(`🔄 Updating existing release ${tagName}...`);
+                const updateResponse = await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: existingRelease.id,
+                  name: tagName,
+                  body: releaseBody,
+                  draft: false,
+                  prerelease: false
+                });
+                console.log(`✅ Successfully updated release: ${updateResponse.data.html_url}`);
+              } else {
+                // Create new release
+                console.log(`🆕 Creating new release ${tagName}...`);
+                const createResponse = await github.rest.repos.createRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag_name: tagName,
+                  name: tagName,
+                  body: releaseBody,
+                  draft: false,
+                  prerelease: false
+                });
+                console.log(`✅ Successfully created release: ${createResponse.data.html_url}`);
+              }
+            } catch (error) {
+              console.error(`❌ Error managing release: ${error.message}`);
+              throw error;
+            }
 
   notify:
     name: Notify Success
     runs-on: ubuntu-latest
-    needs: [detect-and-bump-version, publish-github, publish-npm]
+    needs: [detect-and-bump-version, publish-github, publish-npm, create-github-release]
     if: always() && needs.detect-and-bump-version.outputs.should_release == 'true'
     steps:
       - name: Success notification
@@ -495,7 +540,11 @@ jobs:
           echo "🎉 Successfully published v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "📦 Package published to GitHub Packages"
           echo "📦 Package published to npm.js"
-          echo "🏷️ GitHub release created"
+          if [ "${{ needs.create-github-release.result }}" == "success" ]; then
+            echo "🏷️ GitHub release created/updated"
+          else
+            echo "⚠️ GitHub release step was skipped or failed"
+          fi
 
       - name: Partial success notification
         if: (needs.publish-github.result == 'success' && needs.publish-npm.result != 'success') || (needs.publish-github.result != 'success' && needs.publish-npm.result == 'success')
@@ -503,10 +552,12 @@ jobs:
           echo "⚠️ Partial success for v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "GitHub Packages: ${{ needs.publish-github.result }}"
           echo "npm.js: ${{ needs.publish-npm.result }}"
+          echo "GitHub Release: ${{ needs.create-github-release.result }}"
 
       - name: Failure notification
         if: needs.publish-github.result == 'failure' && needs.publish-npm.result == 'failure'
         run: |
           echo "❌ Publishing failed for v${{ needs.detect-and-bump-version.outputs.new_version }}"
           echo "Both GitHub Packages and npm.js publishing failed"
+          echo "GitHub Release: ${{ needs.create-github-release.result }}"
           exit 1
