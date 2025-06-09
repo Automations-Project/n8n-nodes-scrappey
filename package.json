@@ -1,69 +1,69 @@
 {
-	"name": "@nskha/n8n-nodes-scrappey",
-	"version": "0.3.3",
-	"description": "n8n node package for Scrappey API integration",
-	"keywords": [
-		"n8n-community-node-package"
-	],
-	"license": "MIT",
-	"homepage": "",
-	"author": {
-		"name": "Nskha",
-		"email": "github-public@admins.mozmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Automations-Project/n8n-nodes-scrappey.git"
-	},
-	"engines": {
-		"node": ">=18.10",
-		"pnpm": ">=9.1"
-	},
-	"packageManager": "pnpm@9.1.4",
-	"main": "index.js",
-	"scripts": {
-		"build": "tsc && gulp build:icons",
-		"build:watch": "tsc --watch",
-		"deploy": "node scripts/update-node-json.js && node scripts/deploy.js",
-		"start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start",
-		"clean": "rm -rf node_modules pnpm-lock.yaml package-lock.json dist",
-		"lint": "eslint . --ext .ts,.js",
-		"lint:fix": "eslint . --ext .ts,.js --fix",
-		"format": "prettier --write .",
-		"format:check": "prettier --check .",
-		"type-check": "tsc --noEmit",
-		"prepack": "npm run build",
-		"test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
-		"validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
-		"check-versions": "node scripts/check-versions.js",
-		"check-workflows": "node scripts/check-yaml.js"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/ScrappeyApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/Scrappey/Scrappey.node.js"
-		]
-	},
-	"devDependencies": {
-		"@typescript-eslint/parser": "^7.15.0",
-		"eslint": "^8.56.0",
-		"eslint-plugin-n8n-nodes-base": "^1.16.1",
-		"gulp": "^4.0.2",
-		"js-yaml": "^4.1.0",
-		"n8n": "^1.88.0",
-		"prettier": "^3.3.2",
-		"typescript": "^5.5.3"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
-	},
-	"dependencies": {
-		"uuid": "^11.1.0"
-	}
+  "name": "@nskha/n8n-nodes-scrappey",
+  "version": "0.3.4",
+  "description": "n8n node package for Scrappey API integration",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "author": {
+    "name": "Nskha",
+    "email": "github-public@admins.mozmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automations-Project/n8n-nodes-scrappey.git"
+  },
+  "engines": {
+    "node": ">=18.10",
+    "pnpm": ">=9.1"
+  },
+  "packageManager": "pnpm@9.1.4",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "build:watch": "tsc --watch",
+    "deploy": "node scripts/update-node-json.js && node scripts/deploy.js",
+    "start:dev": "npm run build && mkdir -p ~/.n8n/custom/n8n-nodes-scrappey && cp -r dist package.json ~/.n8n/custom/n8n-nodes-scrappey/ && N8N_CUSTOM_EXTENSIONS=~/.n8n/custom n8n start",
+    "clean": "rm -rf node_modules pnpm-lock.yaml package-lock.json dist",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "prepack": "npm run build",
+    "test": "echo \"Warning: No tests specified. Please add tests for better CI/CD.\" && exit 0",
+    "validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
+    "check-versions": "node scripts/check-versions.js",
+    "check-workflows": "node scripts/check-yaml.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ScrappeyApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Scrappey/Scrappey.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.1",
+    "gulp": "^4.0.2",
+    "js-yaml": "^4.1.0",
+    "n8n": "^1.88.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  }
 }
