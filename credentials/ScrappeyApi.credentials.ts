@@ -1,4 +1,4 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import { ICredentialType, INodeProperties, ICredentialTestRequest } from 'n8n-workflow';
 
 export class ScrappeyApi implements ICredentialType {
 	name = 'scrappeyApi';
@@ -53,4 +53,15 @@ export class ScrappeyApi implements ICredentialType {
 			hint: "Optional. List of domains that are allowed to be scraped. If isn't set, all domains are allowed",
 		},
 	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://publisher.scrappey.com/api/v1',
+			url: '/balance',
+			method: 'GET',
+			qs: {
+				key: '={{$credentials.apiKey}}'
+			},
+		},
+	};
 }
