@@ -1,7 +1,7 @@
 {
   "node": "n8n-nodes-scrappey",
-  "nodeVersion": "0.3.10",
-  "codexVersion": "0.3.10",
+  "nodeVersion": "0.3.11",
+  "codexVersion": "0.3.11",
   "categories": [
     "Development",
     "Web Scraping"
