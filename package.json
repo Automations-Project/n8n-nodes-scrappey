@@ -37,7 +37,7 @@
     "validate": "npm run lint && npm run format:check && npm run type-check && npm run build",
     "check-versions": "node scripts/check-versions.js",
     "check-workflows": "node scripts/check-yaml.js",
-    "fix-lockfile": "rm -f pnpm-lock.yaml && pnpm install",
+    "fix-lockfile": "rm -f pnpm-lock.yaml package-lock.json && pnpm install && echo \"✅ Lockfile regenerated successfully\"",
     "scan:n8n": "node scripts/n8n-scanner.js"
   },
   "files": [

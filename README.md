@@ -8,7 +8,6 @@
 [![npm version](https://img.shields.io/npm/v/@nskha/n8n-nodes-scrappey?logo=npm)](https://www.npmjs.com/package/@nskha/n8n-nodes-scrappey)
 [![npm downloads](https://img.shields.io/npm/dm/@nskha/n8n-nodes-scrappey?logo=npm)](https://www.npmjs.com/package/@nskha/n8n-nodes-scrappey)
 [![n8n Node version](https://img.shields.io/github/package-json/v/Automations-Project/n8n-nodes-scrappey?logo=n8n&label=n8n%20node)](https://github.com/Automations-Project/n8n-nodes-scrappey)
-
 [![n8n compatibility](https://img.shields.io/github/v/release/n8n-io/n8n?logo=n8n&label=)](https://n8n.io)
 [![Node.js compatibility](https://img.shields.io/node/v/@nskha/n8n-nodes-scrappey?logo=node.js)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5%2B-blue?logo=typescript)](https://www.typescriptlang.org)

@@ -42,8 +42,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Use no-frozen-lockfile for auto-versioning to handle potential lockfile mismatches
-          pnpm install --no-frozen-lockfile
+          # Try frozen lockfile first, regenerate if needed for auto-versioning
+          echo "🔍 Attempting to install with frozen lockfile..."
+          if ! pnpm install --frozen-lockfile; then
+            echo "❌ Lockfile is outdated. Regenerating lockfile..."
+            echo "📄 Current lockfile status:"
+            ls -la pnpm-lock.yaml || echo "No lockfile found"
+
+            # Clean install to fix lockfile issues
+            rm -f pnpm-lock.yaml
+            pnpm install
+
+            echo "✅ Lockfile regenerated successfully"
+            echo "📊 Lockfile will be committed with version bump"
+          else
+            echo "✅ Dependencies installed with frozen lockfile"
+          fi
 
       - name: Determine version bump type
         id: version_type
@@ -92,12 +106,14 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
+          # Check if any files have been modified
           if git diff --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes to commit"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected"
+            echo "Changes detected:"
+            git diff --name-only
           fi
 
       - name: Commit version bump
@@ -105,11 +121,29 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+          # Add all relevant files that might have changed
           git add package.json
+
+          # Add lockfile if it was updated
+          if [[ -n $(git diff --name-only pnpm-lock.yaml) ]]; then
+            echo "📦 Including updated lockfile in commit"
+            git add pnpm-lock.yaml
+          fi
+
+          # Add node.json if it exists and was updated
           if [ -f "nodes/Scrappey/Scrappey.node.json" ]; then
             git add nodes/Scrappey/Scrappey.node.json
           fi
-          git commit -m "chore: bump version to v${{ steps.new_version.outputs.version }} [skip ci]"
+
+          # Commit with comprehensive message
+          COMMIT_FILES=$(git diff --cached --name-only | tr '\n' ' ')
+          git commit -m "chore: bump version to v${{ steps.new_version.outputs.version }} [skip ci]
+
+          Updated files: ${COMMIT_FILES}
+
+          - Version bumped from ${{ steps.current_version.outputs.current }} to ${{ steps.new_version.outputs.version }}
+          - Bump type: ${{ steps.version_type.outputs.type }}"
 
       - name: Create and push tag
         if: steps.check_changes.outputs.has_changes == 'true'
