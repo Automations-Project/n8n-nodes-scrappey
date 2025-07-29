@@ -18,6 +18,7 @@ export const publicFields: INodeProperties[] = [
 			},
 		},
 	},
+
 	{
 		displayName: 'URL',
 		name: 'url',

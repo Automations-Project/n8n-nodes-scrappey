@@ -7,14 +7,6 @@ export class ScrappeyApi implements ICredentialType {
 	documentationUrl = 'https://wiki.scrappey.com';
 	properties: INodeProperties[] = [
 		{
-			displayName:
-				'Get 750 Direct (bot-bypass) & 150 GUI Browser requests free—sign up now 👉 <a href="https://nodes.n8n.community/scrappey/signup" target="_blank">Start scraping</a>',
-			name: 'affiliateMessage',
-			type: 'notice',
-			default: '',
-		},
-
-		{
 			displayName: 'API Key',
 			name: 'apiKey',
 			type: 'string',

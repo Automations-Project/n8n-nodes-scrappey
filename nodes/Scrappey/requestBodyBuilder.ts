@@ -1,4 +1,4 @@
-import { IExecuteFunctions } from 'n8n-workflow';
+import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 type BodyEntry = Record<
 	string,
 	string | number | boolean | Object | BodyEntry[] | Record<string, string>
@@ -11,16 +11,14 @@ const processUrlExpressions = (
 	eFn: IExecuteFunctions,
 	itemIndex: number = 0,
 ): string => {
-	// If the URL isn't a string, return it as is
 	if (typeof url !== 'string') return String(url);
 
 	let processedUrl = url;
-	console.log(`Processing URL: ${url}`);
+	eFn.logger.info(`Processing URL: ${url} for item ${itemIndex}`);
 
 	// If the URL starts with '=', we need special handling
 	if (processedUrl.trim().startsWith('=')) {
-		console.log('URL starts with =, special handling required');
-		// Remove the leading '=' to process manually
+		eFn.logger.info('URL starts with =, special handling required');
 		processedUrl = processedUrl.trim().substring(1);
 
 		// Find all n8n expressions in the URL - handles both simple and complex patterns
@@ -28,34 +26,30 @@ const processUrlExpressions = (
 		let match;
 		const expressions: string[] = [];
 
-		// Extract all expressions from the URL
 		while ((match = expressionRegex.exec(processedUrl)) !== null) {
 			if (match[1]) {
 				expressions.push(match[1]);
-				console.log(`Found expression: ${match[1]}`);
+				eFn.logger.info(`Found expression: ${match[1]}`);
 			}
 		}
 
-		// If there are expressions, evaluate each one and replace in the URL
 		if (expressions.length > 0) {
-			console.log('URL contains expressions, processing each one');
+			eFn.logger.info('URL contains expressions, processing each one');
 			for (const expr of expressions) {
 				try {
 					// Create a proper n8n expression to evaluate
 					const fullExpr = `={{ ${expr} }}`;
-					console.log(`Evaluating expression: ${fullExpr}`);
+					eFn.logger.info(`Evaluating expression: ${fullExpr} for item ${itemIndex}`);
 
-					// Evaluate the expression
 					const value = eFn.evaluateExpression(fullExpr, itemIndex);
-					console.log(`Evaluated value: ${value}`);
+					eFn.logger.info(`Evaluated value: ${value}`);
 
-					// Replace the expression in the URL
 					let stringValue = value !== undefined && value !== null ? String(value) : '';
 
 					// Remove any leading equals sign from the evaluated value to prevent double equals in URLs
 					if (stringValue.startsWith('=')) {
 						stringValue = stringValue.substring(1);
-						console.log(`Removed leading equals sign, new value: ${stringValue}`);
+						eFn.logger.info(`Removed leading equals sign, new value: ${stringValue}`);
 					}
 
 					processedUrl = processedUrl.replace(
@@ -63,7 +57,7 @@ const processUrlExpressions = (
 						stringValue,
 					);
 				} catch (error) {
-					console.log(`Error evaluating expression ${expr}: ${error.message}`);
+					eFn.logger.error(`Error evaluating expression ${expr} for item ${itemIndex}`, error);
 					// If evaluation fails, replace with empty string
 					processedUrl = processedUrl.replace(
 						new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
@@ -71,7 +65,7 @@ const processUrlExpressions = (
 					);
 				}
 			}
-			console.log(`Final processed URL: ${processedUrl}`);
+			eFn.logger.info(`Final processed URL for item ${itemIndex}: ${processedUrl}`);
 			return processedUrl;
 		} else {
 			// No expressions found, return the URL without the = prefix
@@ -84,34 +78,30 @@ const processUrlExpressions = (
 	let match;
 	const expressions: string[] = [];
 
-	// Extract all expressions from the URL
 	while ((match = expressionRegex.exec(processedUrl)) !== null) {
 		if (match[1]) {
 			expressions.push(match[1]);
-			console.log(`Found expression: ${match[1]}`);
+			eFn.logger.info(`Found expression: ${match[1]}`);
 		}
 	}
 
-	// Process each expression
 	if (expressions.length > 0) {
-		console.log('URL contains expressions, processing each one');
+		eFn.logger.info('URL contains expressions, processing each one');
 		for (const expr of expressions) {
 			try {
 				// Create a proper n8n expression to evaluate
 				const fullExpr = `={{ ${expr} }}`;
-				console.log(`Evaluating expression: ${fullExpr}`);
+				eFn.logger.info(`Evaluating expression: ${fullExpr} for item ${itemIndex}`);
 
-				// Evaluate the expression
 				const value = eFn.evaluateExpression(fullExpr, itemIndex);
-				console.log(`Evaluated value: ${value}`);
+				eFn.logger.info(`Evaluated value: ${value}`);
 
-				// Replace the expression in the URL
 				let stringValue = value !== undefined && value !== null ? String(value) : '';
 
 				// Remove any leading equals sign from the evaluated value to prevent double equals in URLs
 				if (stringValue.startsWith('=')) {
 					stringValue = stringValue.substring(1);
-					console.log(`Removed leading equals sign, new value: ${stringValue}`);
+					eFn.logger.info(`Removed leading equals sign, new value: ${stringValue}`);
 				}
 
 				processedUrl = processedUrl.replace(
@@ -119,7 +109,7 @@ const processUrlExpressions = (
 					stringValue,
 				);
 			} catch (error) {
-				console.log(`Error evaluating expression ${expr}: ${error.message}`);
+				eFn.logger.error(`Error evaluating expression ${expr} for item ${itemIndex}`, error);
 				// If evaluation fails, replace with empty string
 				processedUrl = processedUrl.replace(
 					new RegExp(`{{\\s*${expr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*}}`, 'g'),
@@ -129,14 +119,14 @@ const processUrlExpressions = (
 		}
 	}
 
-	console.log(`Final processed URL: ${processedUrl}`);
+	eFn.logger.info(`Final processed URL for item ${itemIndex}: ${processedUrl}`);
 	return processedUrl;
 };
 
-const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {
+const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions, itemIndex: number) => {
 	switch (choice) {
 		case 'Browser':
-			handleAdvancedBrowser(eFn);
+			handleAdvancedBrowser(eFn, itemIndex);
 			return body;
 		case 'Request':
 			body.requestType = 'request';
@@ -156,19 +146,19 @@ const Request_Type_Choice = (choice: string, eFn: IExecuteFunctions) => {
 	}
 };
 
-const handleAdvancedBrowser = (eFn: IExecuteFunctions) => {
-	const antibot = eFn.getNodeParameter('antibot', 0, false) as boolean;
+const handleAdvancedBrowser = (eFn: IExecuteFunctions, itemIndex: number) => {
+	const antibot = eFn.getNodeParameter('antibot', itemIndex, false) as boolean;
 	const addRandomMouseMovement = eFn.getNodeParameter(
 		'addRandomMouseMovement',
-		0,
+		itemIndex,
 		false,
 	) as boolean;
-	const recordVideoSession = eFn.getNodeParameter('recordVideoSession', 0, false) as boolean;
-	const cssSelector = eFn.getNodeParameter('cssSelector', 0, '') as string;
-	const href = eFn.getNodeParameter('href', 0, '') as string;
+	const recordVideoSession = eFn.getNodeParameter('recordVideoSession', itemIndex, false) as boolean;
+	const cssSelector = eFn.getNodeParameter('cssSelector', itemIndex, '') as string;
+	const href = eFn.getNodeParameter('href', itemIndex, '') as string;
 	const interceptXhrFetchRequest = eFn.getNodeParameter(
 		'interceptXhrFetchRequest',
-		0,
+		itemIndex,
 		'',
 	) as string;
 
@@ -186,41 +176,42 @@ const handleAdvancedBrowser = (eFn: IExecuteFunctions) => {
 		body.interceptFetchRequest = interceptXhrFetchRequest;
 };
 
-export const handleBody = async (eFn: IExecuteFunctions) => {
+export const handleBody = async (eFn: IExecuteFunctions, itemIndex: number = 0) => {
 	const credentials = await eFn.getCredentials('scrappeyApi');
 	// Reset body object for each call
 	body = {};
 
-	const request_type = eFn.getNodeParameter('request_type', 0, 'Request') as string;
-	body = Request_Type_Choice(request_type, eFn);
+	const request_type = eFn.getNodeParameter('request_type', itemIndex, 'Request') as string;
+	body = Request_Type_Choice(request_type, eFn, itemIndex);
 
-	let url = eFn.getNodeParameter('url', 0, '') as string;
-	const httpMethod = eFn.getNodeParameter('httpMethod', 0, '') as string;
-	const proxyType = eFn.getNodeParameter('proxyType', 0, '') as string;
-	const bodyOrParams = eFn.getNodeParameter('bodyOrParams', 0, '') as string;
-	const params_for_request = eFn.getNodeParameter('params_for_request', 0, '') as string;
-	const body_for_request = eFn.getNodeParameter('body_for_request', 0, '') as string;
-	const userSession = eFn.getNodeParameter('userSession', 0, '') as string;
-	const headersInputMethod = eFn.getNodeParameter('headersInputMethod', 0, 'fields') as string;
-	const customHeaders = eFn.getNodeParameter('customHeaders', 0, {}) as Record<string, string>;
-	const jsonHeaders = eFn.getNodeParameter('jsonHeaders', 0, '') as string;
-	const customCookies = eFn.getNodeParameter('customCookies', 0, {}) as Record<string, string>;
-	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', 0, '') as string;
+	let url = eFn.getNodeParameter('url', itemIndex, '') as string;
+	const httpMethod = eFn.getNodeParameter('httpMethod', itemIndex, '') as string;
+	const proxyType = eFn.getNodeParameter('proxyType', itemIndex, '') as string;
+	const bodyOrParams = eFn.getNodeParameter('bodyOrParams', itemIndex, '') as string;
+	const params_for_request = eFn.getNodeParameter('params_for_request', itemIndex, '') as string;
+	const body_for_request = eFn.getNodeParameter('body_for_request', itemIndex, '') as string;
+	const userSession = eFn.getNodeParameter('userSession', itemIndex, '') as string;
+	const headersInputMethod = eFn.getNodeParameter('headersInputMethod', itemIndex, 'fields') as string;
+	const customHeaders = eFn.getNodeParameter('customHeaders', itemIndex, {}) as Record<string, string>;
+	const jsonHeaders = eFn.getNodeParameter('jsonHeaders', itemIndex, '') as string;
+	const customCookies = eFn.getNodeParameter('customCookies', itemIndex, {}) as Record<string, string>;
+	const customProxyCountry = eFn.getNodeParameter('customProxyCountry', itemIndex, '') as string;
 	const customProxyCountryBoolean = eFn.getNodeParameter(
 		'customProxyCountryBoolean',
-		0,
+		itemIndex,
 		false,
 	) as boolean;
-	const customProxy = eFn.getNodeParameter('custom_proxy', 0, false) as boolean;
-	const allowProxy = eFn.getNodeParameter('allowProxy', 0, false) as boolean;
-	const attempts = eFn.getNodeParameter('attempts', 0, 3) as number;
+	const customProxy = eFn.getNodeParameter('custom_proxy', itemIndex, false) as boolean;
+	const whichProxyToUse = eFn.getNodeParameter('whichProxyToUse', itemIndex, 'proxyFromCredentials') as string;
+	const attempts = eFn.getNodeParameter('attempts', itemIndex, 3) as number;
+	const datadome = eFn.getNodeParameter('datadome', itemIndex, false) as boolean;
+	const oneStringCookie = eFn.getNodeParameter('oneStringCookie', itemIndex, false) as boolean;
+	const cookie = eFn.getNodeParameter('cookie', itemIndex, '') as string;
 
-	// Process URL with expressions
 	if (url && url.trim() !== '') {
 		// Process URL expressions - starts with '=' or contains {{ $json.key }}
-		url = processUrlExpressions(url, eFn, 0);
+		url = processUrlExpressions(url, eFn, itemIndex);
 
-		// Clean up URL if needed
 		if (url.endsWith('/')) {
 			url = url.slice(0, -1);
 		}
@@ -235,17 +226,18 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	if (userSession && userSession.trim() !== '') body.session = userSession;
 
 	if (httpMethod !== 'request.get') {
-		if (bodyOrParams) {
+		if (bodyOrParams === 'body_used') {
 			body.postData = body_for_request;
 			body.customHeaders = {
 				'content-type': 'application/json',
 			};
-		} else body.postData = params_for_request;
+		} else {
+			body.postData = params_for_request;
+		}
 	}
 
 	// Handle headers based on input method
 	if (headersInputMethod === 'fields') {
-		// Process headers from fields
 		if (customHeaders && Object.keys(customHeaders).length > 0) {
 			const headersObj: Record<string, string> = {};
 
@@ -259,7 +251,6 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 			}
 		}
 	} else if (headersInputMethod === 'json') {
-		// Process headers from JSON
 		if (jsonHeaders && jsonHeaders.trim() !== '') {
 			try {
 				const headersObj = JSON.parse(jsonHeaders);
@@ -267,12 +258,20 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 					body.customHeaders = headersObj;
 				}
 			} catch (error) {
-				throw new Error(`Invalid JSON headers format: ${error.message}`);
+				throw new NodeOperationError(eFn.getNode(), 'Invalid JSON headers format', {
+					description: `The provided JSON headers are not valid: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					itemIndex // Include item index in error
+				});
 			}
 		}
 	}
 
-	if (customCookies && Object.keys(customCookies).length > 0) {
+	// Handle cookies
+	if (oneStringCookie) {
+		if (cookie && cookie.trim() !== '') {
+			body.cookies = cookie;
+		}
+	} else if (customCookies && Object.keys(customCookies).length > 0) {
 		let cookieString = '';
 
 		if (customCookies.cookies && Array.isArray(customCookies.cookies)) {
@@ -289,13 +288,24 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 			}
 		}
 
-		body.cookies = cookieString;
+		if (cookieString) {
+			body.cookies = cookieString;
+		}
 	}
 
 	if (customProxyCountryBoolean) body.proxyCountry = customProxyCountry;
 
-	if (allowProxy) {
-		if (customProxy === true) body.proxy = credentials.proxyUrl;
+	// Handle proxy configuration
+	if (whichProxyToUse === 'proxyFromCredentials' && credentials?.proxyUrl) {
+		body.proxy = credentials.proxyUrl as string;
+	} else if (whichProxyToUse === 'proxyFromScrappey') {
+		if (customProxy && credentials?.proxyUrl) {
+			body.proxy = credentials.proxyUrl as string;
+		}
+	}
+
+	if (datadome && request_type === 'Browser') {
+		body.datadomeBypass = true;
 	}
 
 	body.attempts = attempts;
@@ -314,17 +324,15 @@ export const handleBody = async (eFn: IExecuteFunctions) => {
 	return body;
 };
 
-export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => {
-	const method = eFn.getNodeParameter('method', 0, '={{ $($prevNode.name).params.method }}');
+export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions, itemIndex: number = 0) => {
+	const method = eFn.getNodeParameter('method', itemIndex, '={{ $($prevNode.name).params.method }}');
 
 	const processedMethod = typeof method === 'string' ? method.toLowerCase() : method;
 	const cmd = `request.${processedMethod}`;
-	let urlRaw = eFn.getNodeParameter('url', 0, '={{ $($prevNode.name).params.url }}') as string;
+	let urlRaw = eFn.getNodeParameter('url', itemIndex, '={{ $($prevNode.name).params.url }}') as string;
 
-	// Process URL expressions - handles both direct expressions and {{ $json.key }} patterns
-	urlRaw = processUrlExpressions(urlRaw, eFn, 0);
+	urlRaw = processUrlExpressions(urlRaw, eFn, itemIndex);
 
-	// Clean up the URL if needed
 	if (typeof urlRaw === 'string' && urlRaw.endsWith('/')) {
 		urlRaw = urlRaw.slice(0, -1);
 	}
@@ -333,29 +341,29 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 
 	const authentication = eFn.getNodeParameter(
 		'authentication',
-		0,
+		itemIndex,
 		'={{ $($prevNode.name).params.authentication }}',
 	);
 	const sendQuery = eFn.getNodeParameter(
 		'sendQuery',
-		0,
+		itemIndex,
 		'={{ $($prevNode.name).params.sendQuery }}',
 	);
 
 	const queryParameters = eFn.getNodeParameter(
 		'queryParameters',
-		0,
+		itemIndex,
 		'={{ $($prevNode.name).params.queryParameters }}',
 	);
 	const headerParameters = eFn.getNodeParameter(
 		'headerParameters',
-		0,
+		itemIndex,
 		'={{ $($prevNode.name).params.headerParameters }}',
 	);
-	const proxy = eFn.getNodeParameter('proxy', 0, '={{ $($prevNode.name).params.options.proxy }}');
+	const proxy = eFn.getNodeParameter('proxy', itemIndex, '={{ $($prevNode.name).params.options.proxy }}');
 	const bodyParameters = eFn.getNodeParameter(
 		'bodyParameters',
-		0,
+		itemIndex,
 		'={{ $($prevNode.name).params.bodyParameters }}',
 	);
 
@@ -385,7 +393,7 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 	let processedProxy: string | undefined;
 	const whichProxyToUse = eFn.getNodeParameter(
 		'whichProxyToUse',
-		0,
+		itemIndex,
 		'proxyFromCredentials',
 	) as string;
 	switch (whichProxyToUse) {
@@ -403,6 +411,7 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 			break;
 		}
 		case 'proxyFromScrappey': {
+			// No processing needed here
 			break;
 		}
 	}
@@ -427,7 +436,6 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 			}
 
 			processedPostData = JSON.stringify(bodyParamsObj);
-
 			contentType = 'application/json';
 		} else {
 			processedPostData = typeof bodyParams === 'string' ? bodyParams : JSON.stringify(bodyParams);
@@ -435,18 +443,6 @@ export const HTTPRequest_Extract_Parameters = async (eFn: IExecuteFunctions) => 
 		}
 	}
 
-	if (queryParameters) {
-		const qParams = queryParameters;
-
-		if (
-			typeof qParams === 'object' &&
-			qParams !== null &&
-			'parameters' in qParams &&
-			Array.isArray(qParams.parameters) &&
-			qParams.parameters.length > 0
-		) {
-		}
-	}
 	return {
 		method,
 		cmd,

@@ -240,7 +240,7 @@ export async function genericHttpRequest<T>(
 			},
 		};
 
-		// Special handling for proxy error with code-0007
+
 		if (
 			(error.message && error.message.includes('ERR_TUNNEL_CONNECTION_FAILED')) ||
 			error.message.includes('ERR_EMPTY_RESPONSE')

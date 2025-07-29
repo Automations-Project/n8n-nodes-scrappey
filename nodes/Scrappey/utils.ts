@@ -148,7 +148,7 @@ export const evaluateExpression = (
 			// Pass the expression without the leading '='
 			return eFn.evaluateExpression(expressionString.substring(1), itemIndex);
 		} catch (error) {
-			console.warn(`Failed to evaluate expression: ${expressionString}`, error);
+			eFn.logger.warn(`Failed to evaluate expression: ${expressionString}`, error);
 			return value; // Return original value if evaluation fails
 		}
 	}
