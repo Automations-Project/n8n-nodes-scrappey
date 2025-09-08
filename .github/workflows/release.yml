@@ -470,7 +470,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const changelog = `${{ steps.changelog.outputs.changelog }}`;
