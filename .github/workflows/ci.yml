@@ -24,7 +24,7 @@ jobs:
           version: '9.1.4'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '18.x'
           cache: 'pnpm'
@@ -97,7 +97,7 @@ jobs:
           version: '9.1.4'
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
@@ -141,7 +141,7 @@ jobs:
           version: '9.1.4'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '18.x'
           cache: 'pnpm'
@@ -176,7 +176,7 @@ jobs:
           version: '9.1.4'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '18.x'
           cache: 'pnpm'
