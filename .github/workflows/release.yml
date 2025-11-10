@@ -43,7 +43,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -257,7 +257,7 @@ jobs:
           ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -311,7 +311,7 @@ jobs:
           ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -385,7 +385,7 @@ jobs:
           ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
