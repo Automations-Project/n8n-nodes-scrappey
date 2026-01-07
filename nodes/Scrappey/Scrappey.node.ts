@@ -1,5 +1,5 @@
 import { INodeType, INodeTypeDescription } from 'n8n-workflow';
-import { AdvancedSettingsForBrowser, publicFields } from './fields';
+import { allFields } from './fields';
 import { executeScrappey } from './execute';
 import { scrappeyOperators } from './operators';
 import { IExecuteFunctions, INodeExecutionData, IDataObject, NodeOperationError } from 'n8n-workflow';
@@ -73,7 +73,7 @@ export class Scrappey implements INodeType {
 		displayName: 'Scrappey',
 		name: 'scrappey',
 		icon: 'file:Scrappey.svg',
-		group: ['web-scraping'],
+		group: ['transform'],
 		version: 1,
 		subtitle:
 			'={{ { requestBuilder: "🛠️ Request Builder", httpRequestAutoRetry: "🔁 Auto • HTTP Mode", httpRequestAutoRetryBrowser: "🌐 Auto • Browser Mode" }[$parameter["scrappeyOperations"]] }}',
@@ -97,6 +97,6 @@ export class Scrappey implements INodeType {
 				'Content-Type': 'application/json',
 			},
 		},
-		properties: [...scrappeyOperators, ...publicFields, ...AdvancedSettingsForBrowser],
+		properties: [...scrappeyOperators, ...allFields],
 	};
 }

@@ -228,12 +228,17 @@ export async function genericHttpRequest<T>(
 				message: 'Keyboard action value not found',
 				details: 'Keyboard action value not found.',
 			},
-			'CODE-0037': {
-				code: 'CODE-0037',
-				message: 'Datadome was blocked',
-				details: 'Datadome was blocked, please try again with a different proxy.',
-			},
-			'CODE-10000': {
+		'CODE-0037': {
+			code: 'CODE-0037',
+			message: 'Datadome was blocked',
+			details: 'Datadome was blocked, please try again with a different proxy.',
+		},
+		'CODE-0038': {
+			code: 'CODE-0038',
+			message: 'Could not solve FingerprintJS challenge',
+			details: 'The FingerprintJS challenge could not be solved, please try again.',
+		},
+		'CODE-10000': {
 				code: 'CODE-10000',
 				message: 'Unknown error - has to be specified',
 				details: 'An unknown error occurred and needs to be specified.',

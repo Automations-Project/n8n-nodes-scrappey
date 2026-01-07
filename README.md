@@ -19,44 +19,107 @@
 [![GitHub issues](https://img.shields.io/github/issues/Automations-Project/n8n-nodes-scrappey)](https://github.com/Automations-Project/n8n-nodes-scrappey/issues)
 [![Last commit](https://img.shields.io/github/last-commit/Automations-Project/n8n-nodes-scrappey)](https://github.com/Automations-Project/n8n-nodes-scrappey/commits)
 
-> 🚀 **Advanced web scraping and anti-bot bypass node for n8n workflows**
+> **Advanced web scraping and anti-bot bypass node for n8n workflows - Now with complete API coverage!**
 
 A powerful n8n community node that integrates with the [Scrappey.com API](https://scrappey.com) to provide advanced web scraping capabilities with built-in anti-bot protection bypass. Perfect for automating data extraction from protected websites, handling CAPTCHAs, and managing complex browser interactions.
 
-## ✨ Key Features
+## What's New in v1.0.0
 
-### 🛠️ **Three Operation Modes**
+This major update brings **complete API coverage** matching the official Scrappey documentation:
+
+- **Session Management** - Create, destroy, list, and check session status
+- **WebSocket Connections** - Advanced persistent browser control
+- **20+ Browser Actions** - Click, type, scroll, wait, execute JavaScript, solve captchas, and more
+- **Full Antibot Support** - Cloudflare, Datadome, Kasada, Incapsula, PerimeterX bypass
+- **Response Options** - Screenshots, PDF generation, regex extraction, filters
+- **Request Interception** - Abort patterns, domain blocking, XHR/Fetch interception
+- **AI-Powered Parsing** - Automatic HTML structure extraction
+
+## Key Features
+
+### Eight Operation Modes
 
 1. **Request Builder** - Create fully customized HTTP/browser requests with granular control
 2. **HTTP Auto-Retry** - Automatically retry failed HTTP requests through Scrappey's anti-bot network
 3. **Browser Auto-Retry** - Advanced browser-based retry with full anti-bot protection
+4. **Session Create** - Create persistent browser sessions for multi-request workflows
+5. **Session Destroy** - Clean up sessions when done
+6. **Session List** - View all active sessions
+7. **Session Check** - Verify if a session is still active
+8. **WebSocket Create** - Create WebSocket-based browser connections
 
-### 🔒 **Anti-Bot Protection Bypass**
+### Anti-Bot Protection Bypass
 
-- **Cloudflare** challenge solving
-- **Datadome** bypass capabilities
-- **hCaptcha & reCAPTCHA** automatic solving
+- **Cloudflare** challenge solving with dedicated bypass
+- **Datadome** bypass with debug mode
+- **Kasada** protection bypass
+- **Incapsula/Imperva** detection and solving
+- **PerimeterX** bypass
+- **hCaptcha, reCAPTCHA, Turnstile** automatic solving
+- **FunCaptcha (Arkose Labs)** support
 - **JavaScript-heavy websites** full browser simulation
 - **Mouse movement simulation** for enhanced stealth
 
-### 🌍 **Advanced Proxy Management**
+### 20+ Browser Actions
 
-- **Residential proxies** with country targeting
+Execute complex browser automation sequences:
+
+| Action | Description |
+|--------|-------------|
+| `click` | Click elements with CSS selector |
+| `type` | Type text into input fields |
+| `goto` | Navigate to URLs |
+| `wait` | Wait for specified time |
+| `wait_for_selector` | Wait for elements to appear |
+| `wait_for_function` | Wait for JavaScript conditions |
+| `wait_for_load_state` | Wait for page load states |
+| `wait_for_cookie` | Wait for cookies to be set |
+| `execute_js` | Run JavaScript code |
+| `scroll` | Scroll to elements or page bottom |
+| `hover` | Hover over elements |
+| `keyboard` | Simulate key presses |
+| `dropdown` | Select dropdown options |
+| `switch_iframe` | Switch to iframe context |
+| `set_viewport` | Change viewport size |
+| `if` | Conditional action execution |
+| `while` | Loop actions with conditions |
+| `solve_captcha` | Solve various captcha types |
+| `discord_login` | Discord authentication |
+| `remove_iframes` | Remove all iframes |
+
+### Advanced Proxy Management
+
+- **Residential proxies** with country targeting (150+ countries)
+- **Premium residential proxies** for better success rates
 - **Datacenter proxies** for fast requests
 - **Mobile proxies** for mobile-specific content
 - **Custom proxy** support (SOCKS4/5, HTTP/HTTPS)
-- **150+ countries** available for geo-targeting
+- **No proxy** option for direct connections
 
-### ⚙️ **Flexible Configuration**
+### Response Options
 
-- **Multiple request types**: Standard HTTP, Browser, Patched Chrome
-- **Custom headers & cookies** with field-based or JSON input
-- **Session management** for maintaining state across requests
-- **POST/PUT/PATCH support** with body or form parameters
-- **CSS selector waiting** for dynamic content
-- **XHR/Fetch interception** for API data extraction
+- **Screenshots** with custom dimensions and base64/URL output
+- **PDF generation** of pages
+- **Regex extraction** for pattern matching
+- **Field filtering** to reduce response size
+- **Base64 encoding** of responses
+- **Redirect tracking** for all redirect URLs
+- **Inner text extraction** for clean content
 
-## 🚀 Installation
+### Request Interception
+
+- **Abort patterns** to block unwanted requests
+- **Domain blacklisting** for blocking specific domains
+- **XHR/Fetch interception** to capture API responses
+- **Wait for abort detection** before continuing
+
+### AI-Powered Parsing
+
+- **Automatic structure extraction** with AI models
+- **DeepSeek, GPT-4, GPT-3.5** support
+- **Custom structure definitions** for targeted extraction
+
+## Installation
 
 ### Method 1: n8n Community Nodes (Recommended)
 
@@ -86,26 +149,26 @@ git clone https://github.com/Automations-Project/n8n-nodes-scrappey.git
 cd n8n-nodes-scrappey
 
 # Install dependencies
-pnpm install
+npm install
 
 # Build the node
-pnpm run build
+npm run build
 
 # Link for development
-pnpm run start:dev
+npm run start:dev
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### 1. Set Up Scrappey API Credentials
 
-1. Sign up at [Scrappey.com](/#) to get your API key.
+1. Sign up at [Scrappey.com](https://scrappey.com) to get your API key.
 2. In n8n, create new **Scrappey API** credentials
 3. Enter your API key and optional proxy settings
-   > 🎯 **Get Started Free!** Try Scrappey with **750 Direct requests** and **150 Browser requests** at no cost.  
-   > [Start your free trial →](https://nodes.n8n.community/scrappey/signup)
-   >
-   > **Affordable scaling**: For just €100, you can get 600,000 request credits including proxies, captcha etc...
+
+> **Get Started Free!** Try Scrappey with **750 Direct requests** and **150 Browser requests** at no cost.
+>
+> **Affordable scaling**: For just €100, you can get 600,000 request credits including proxies, captcha etc...
 
 ### 2. Credential Options
 
@@ -113,64 +176,11 @@ pnpm run start:dev
 - **Custom Proxy** (optional): Your own proxy URL (SOCKS4/5, HTTP/HTTPS)
 - **Whitelisted Domains** (optional): JSON array of allowed domains for enhanced security
 
-## 📋 Operation Modes
-![Operations Types](.github/assets/operations.jpg)
-### 🛠️ Request Builder (Manual)
-
-**Primary mode for creating custom requests with full control**
-
-```typescript
-// Example configuration options:
-{
-  "url": "https://example.com/api/data",
-  "httpMethod": "GET",
-  "request_type": "Browser", // or "Request", "PatchedChrome"
-  "whichProxyToUse": "proxyFromScrappey",
-  "proxyType": "residential", // residential, datacenter, mobile
-  "customProxyCountry": "UnitedStates",
-  "antibot": true,
-  "mouseMovements": true,
-  "datadome": true
-}
-```
-
-**Use Cases:**
-
-- Complex form submissions with CAPTCHA solving
-- JavaScript-heavy SPA scraping
-- API data extraction with anti-bot protection
-- Multi-step workflows with session management
-
-### 🔁 HTTP Auto-Retry
-
-**Fallback solution for failed n8n HTTP Request nodes**
-![Banner](.github/assets/example.svg)
-Connect the **error output** (red connector) of a standard HTTP Request node to this operation. It automatically retries the same request through Scrappey's network when blocked by:
-
-- Cloudflare challenges
-- Rate limiting
-- IP blocks
-- Basic anti-bot measures
-
-
-### 🌐 Browser Auto-Retry
-
-**Advanced browser-based retry with full anti-bot protection**
-
-Similar to HTTP Auto-Retry but uses a full browser environment with:
-
-- Automatic CAPTCHA solving (hCaptcha, reCAPTCHA)
-- Mouse movement simulation
-- Datadome bypass enabled
-- JavaScript execution
-- 3 automatic retries
-
-## 💡 Usage Examples
+## Usage Examples
 
 ### Basic Web Scraping
 
 ```javascript
-// Request Builder - Simple GET request
 {
   "operation": "requestBuilder",
   "url": "https://httpbin.org/get",
@@ -179,10 +189,9 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
 }
 ```
 
-### Advanced Browser Automation
+### Browser Automation with Anti-Bot Protection
 
 ```javascript
-// Browser request with anti-bot protection
 {
   "operation": "requestBuilder",
   "url": "https://protected-site.com",
@@ -190,113 +199,148 @@ Similar to HTTP Auto-Retry but uses a full browser environment with:
   "antibot": true,
   "mouseMovements": true,
   "datadome": true,
-  "cssSelector": ".content-loaded",
+  "cloudflareBypass": true,
   "proxyType": "residential",
   "customProxyCountry": "UnitedStates"
 }
 ```
 
-### Form Submission with CAPTCHA
+### Session-Based Workflow
 
 ```javascript
-// POST request with CAPTCHA solving
+// 1. Create session
+{
+  "operation": "sessionCreate",
+  "sessionId": "my-session-123",
+  "sessionTtl": 300
+}
+
+// 2. Use session for requests
 {
   "operation": "requestBuilder",
-  "url": "https://example.com/submit",
-  "httpMethod": "request.post",
-  "request_type": "Browser",
-  "bodyOrParams": "body_used",
-  "body_for_request": "{\"name\":\"John\",\"email\":\"john@example.com\"}",
-  "antibot": true
+  "url": "https://example.com/login",
+  "userSession": "my-session-123",
+  "browserActions": [
+    {"type": "type", "cssSelector": "#username", "text": "myuser"},
+    {"type": "type", "cssSelector": "#password", "text": "mypass"},
+    {"type": "click", "cssSelector": "#login-btn"}
+  ]
+}
+
+// 3. Destroy session when done
+{
+  "operation": "sessionDestroy",
+  "sessionToDestroy": "my-session-123"
 }
 ```
 
-### Auto-Retry Fallback
+### Captcha Solving
 
 ```javascript
-// Connect HTTP Request node error output to Scrappey node input
-// Set operation to "httpRequestAutoRetry" or "httpRequestAutoRetryBrowser"
 {
-  "operation": "httpRequestAutoRetry",
-  "whichProxyToUse": "proxyFromScrappey",
-  "proxyType": "residential"
+  "operation": "requestBuilder",
+  "url": "https://example.com",
+  "request_type": "Browser",
+  "antibot": true,
+  "alwaysLoad": ["recaptcha", "hcaptcha", "turnstile"],
+  "browserActions": [
+    {
+      "type": "solve_captcha",
+      "captcha": "turnstile",
+      "captchaCssSelector": ".cf-turnstile"
+    }
+  ]
 }
 ```
 
-## 🔒 Error Handling
+### Screenshot and PDF Generation
 
-The node provides detailed error messages for common Scrappey API error codes:
+```javascript
+{
+  "operation": "requestBuilder",
+  "url": "https://example.com",
+  "request_type": "Browser",
+  "screenshot": true,
+  "screenshotWidth": 1920,
+  "screenshotHeight": 1080,
+  "screenshotUpload": true,
+  "pdf": true
+}
+```
 
-| Code      | Description        | Solution                            |
-| --------- | ------------------ | ----------------------------------- |
-| CODE-0001 | Server overloaded  | Retry after a few minutes           |
+### XHR/Fetch Interception
+
+```javascript
+{
+  "operation": "requestBuilder",
+  "url": "https://example.com",
+  "request_type": "Browser",
+  "interceptXhrFetchRequest": "https://api.example.com/data",
+  "abortOnDetection": "analytics.com, tracking.js"
+}
+```
+
+## Error Handling
+
+The node provides detailed error messages for all Scrappey API error codes:
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| CODE-0001 | Server overloaded | Retry after a few minutes |
 | CODE-0002 | Cloudflare blocked | Try different proxy or browser mode |
-| CODE-0003 | Too many attempts  | Wait before retrying                |
-| CODE-0004 | Invalid command    | Check request configuration         |
-| CODE-0005 | Tunnel failed      | Retry with different proxy          |
+| CODE-0003 | Too many attempts | Wait before retrying |
+| CODE-0004 | Invalid command | Check request configuration |
+| CODE-0005 | Tunnel failed | Retry with different proxy |
+| CODE-0010 | Datadome blocked | Try different proxy |
+| CODE-0029 | Too many sessions | Destroy unused sessions |
+| CODE-0032 | Turnstile not solved | Try different proxy |
+| CODE-0038 | FingerprintJS failed | Retry request |
 
-## 🏗️ Development
+## Development
 
 ### Building from Source
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Development build with watch
-pnpm run build:watch
+npm run build:watch
 
 # Production build
-pnpm run build
+npm run build
 
 # Linting & formatting
-pnpm run lint
-pnpm run format
+npm run lint
+npm run format
 
 # Type checking
-pnpm run type-check
-
-# Full validation
-pnpm run validate
+npm run type-check
 ```
 
 ### Project Structure
 
 ```
 n8n-nodes-scrappey/
-├── nodes/Scrappey/          # Main node implementation
-│   ├── Scrappey.node.ts     # Node definition and execution
-│   ├── execute.ts           # Operation dispatcher
-│   ├── RequestMethods.ts    # HTTP/Browser request handlers
+├── nodes/Scrappey/
+│   ├── Scrappey.node.ts      # Node definition and execution
+│   ├── execute.ts            # Operation dispatcher
+│   ├── methods.ts            # Request handlers
 │   ├── requestBodyBuilder.ts # Request body construction
-│   ├── fields.ts            # Node field definitions
-│   ├── GenericFunctions.ts  # API integration utilities
-│   └── utils.ts             # Helper functions
-├── credentials/             # Credential definitions
+│   ├── fields.ts             # Node field definitions
+│   ├── browserActions.ts     # Browser action definitions
+│   ├── types.ts              # TypeScript type definitions
+│   ├── GenericFunctions.ts   # API integration utilities
+│   ├── operators.ts          # Operation definitions
+│   └── utils.ts              # Helper functions
+├── credentials/
 │   └── ScrappeyApi.credentials.ts
-├── scripts/                 # Build and deployment scripts
-├── .github/workflows/       # CI/CD pipelines
-└── dist/                    # Built output
+├── scripts/
+├── .github/workflows/
+└── dist/
 ```
 
-### CI/CD Pipeline
-
-This project includes a comprehensive CI/CD setup:
-
-- **Continuous Integration**: Automated testing, linting, and building on every PR
-- **Auto-versioning**: Automatic version bumps based on commit messages
-- **Automated Releases**: Publishes to GitHub Packages and optionally npm
-- **Security Scanning**: CodeQL analysis and dependency auditing
-- **Dependabot**: Automated dependency updates
-
-#### Commit Message Conventions
-
-- `feat: description` → Minor version bump
-- `fix: description` → Patch version bump
-- `BREAKING CHANGE` or `[major]` → Major version bump
-- `[skip ci]` or `[skip version]` → Skip automation
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
@@ -304,18 +348,24 @@ This project includes a comprehensive CI/CD setup:
 4. Push to branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 📄 License
+### Commit Message Conventions
+
+- `feat: description` → Minor version bump
+- `fix: description` → Patch version bump
+- `BREAKING CHANGE` or `[major]` → Major version bump
+- `[skip ci]` or `[skip version]` → Skip automation
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-## 🔗 Links
+## Links
 
 - **Scrappey Website**: [https://scrappey.com](https://scrappey.com)
 - **Scrappey Documentation**: [https://wiki.scrappey.com](https://wiki.scrappey.com)
 - **n8n Community**: [https://community.n8n.io](https://community.n8n.io)
 - **GitHub Issues**: [Report bugs or request features](https://github.com/Automations-Project/n8n-nodes-scrappey/issues)
-- **Nskha Discord**: [⚠️Incative community](https://nskha.com/discord)
 
 ---
 
-**Made with ❤️ for the n8n community**
+**Made with love for the n8n community**
